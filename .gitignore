@@ -4,6 +4,11 @@
 !.env.example
 *.pem
 *.key
+secrets/
+
+# Private research files: the annotation answer key must never be committed
+*PRIVATE*answer*
+*private*answer*
 
 # Logs
 logs/
@@ -20,6 +25,23 @@ desktop.ini
 .idea/
 *.swp
 *~
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Node / frontend
+node_modules/
 
 # Build output and caches
 dist/
