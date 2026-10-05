@@ -1,0 +1,2 @@
+# Same scikit-learn as the backend so trained models load without version drift.
+scikit-learn==1.9.1

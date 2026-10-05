@@ -18,6 +18,8 @@ router = APIRouter(tags=["system"])
 class HealthOut(BaseModel):
     status: Literal["ok", "degraded"]
     database: Literal["ok", "unavailable"]
+    triage_model: str
+    demo_mode: bool
     environment: str
     version: str
     server_time_utc: datetime
@@ -32,9 +34,12 @@ def health(request: Request, response: Response, db: Session = Depends(get_db)) 
         database = "unavailable"
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
 
+    model = request.app.state.triage_model
     return HealthOut(
-        status="ok" if database == "ok" else "degraded",
+        status="ok" if database == "ok" and model is not None else "degraded",
         database=database,
+        triage_model=f"{model.name}:{model.version}" if model is not None else "unavailable",
+        demo_mode=request.app.state.settings.demo_mode,
         environment=request.app.state.settings.environment,
         version=__version__,
         server_time_utc=utcnow(),

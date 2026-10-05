@@ -9,3 +9,5 @@ bcrypt==5.0.0
 email-validator==2.3.0
 # Windows has no system timezone database; zoneinfo needs this for Asia/Kolkata
 tzdata==2026.5
+# AI triage (must match the version used to train ml/artifacts; see metadata.json)
+scikit-learn==1.9.1

@@ -1,0 +1,934 @@
+{
+  "model_name": "tfidf-logreg",
+  "model_version": "v1",
+  "sklearn_version": "1.9.1",
+  "dataset": {
+    "file": "SafeSpeak_dataset_split_600.csv",
+    "sha256": "66483ef778c0af0ae2e4e7656478e651f6d9f76eea1d54822be3c1f607fbd776",
+    "rows": 600,
+    "split_sizes": {
+      "train": 420,
+      "val": 90,
+      "test": 90
+    },
+    "source_counts": {
+      "ai_generated_batch1_v2": 100,
+      "ai_generated_batch2": 100,
+      "ai_paraphrase_of_batch1": 200,
+      "ai_paraphrase_of_batch2": 200
+    },
+    "note": "All 600 texts are synthetic (AI-generated seeds and AI paraphrases)."
+  },
+  "labels": {
+    "category": [
+      "Hostel",
+      "Exam",
+      "Academic / Department",
+      "Infrastructure and facilities",
+      "Safety and welfare",
+      "Administrative / Fees",
+      "Library / Transport",
+      "Other"
+    ],
+    "priority": [
+      "Low",
+      "Medium",
+      "High",
+      "Critical"
+    ]
+  },
+  "confidence": {
+    "definition": "max class probability per task; overall = min(category, priority)",
+    "selection_split": "val",
+    "target_selective_accuracy": 0.7,
+    "min_covered": 5,
+    "recommended_threshold": 0.24,
+    "recommendation": {
+      "threshold": 0.24,
+      "covered": 17,
+      "coverage": 0.1889,
+      "selective_accuracy": 0.7059,
+      "rule": "lowest threshold reaching the target selective accuracy"
+    },
+    "validation_table": [
+      {
+        "threshold": 0.05,
+        "covered": 90,
+        "coverage": 1.0,
+        "selective_accuracy": 0.4111
+      },
+      {
+        "threshold": 0.06,
+        "covered": 90,
+        "coverage": 1.0,
+        "selective_accuracy": 0.4111
+      },
+      {
+        "threshold": 0.07,
+        "covered": 90,
+        "coverage": 1.0,
+        "selective_accuracy": 0.4111
+      },
+      {
+        "threshold": 0.08,
+        "covered": 90,
+        "coverage": 1.0,
+        "selective_accuracy": 0.4111
+      },
+      {
+        "threshold": 0.09,
+        "covered": 90,
+        "coverage": 1.0,
+        "selective_accuracy": 0.4111
+      },
+      {
+        "threshold": 0.1,
+        "covered": 90,
+        "coverage": 1.0,
+        "selective_accuracy": 0.4111
+      },
+      {
+        "threshold": 0.11,
+        "covered": 90,
+        "coverage": 1.0,
+        "selective_accuracy": 0.4111
+      },
+      {
+        "threshold": 0.12,
+        "covered": 90,
+        "coverage": 1.0,
+        "selective_accuracy": 0.4111
+      },
+      {
+        "threshold": 0.13,
+        "covered": 90,
+        "coverage": 1.0,
+        "selective_accuracy": 0.4111
+      },
+      {
+        "threshold": 0.14,
+        "covered": 90,
+        "coverage": 1.0,
+        "selective_accuracy": 0.4111
+      },
+      {
+        "threshold": 0.15,
+        "covered": 88,
+        "coverage": 0.9778,
+        "selective_accuracy": 0.4091
+      },
+      {
+        "threshold": 0.16,
+        "covered": 78,
+        "coverage": 0.8667,
+        "selective_accuracy": 0.4487
+      },
+      {
+        "threshold": 0.17,
+        "covered": 68,
+        "coverage": 0.7556,
+        "selective_accuracy": 0.4853
+      },
+      {
+        "threshold": 0.18,
+        "covered": 61,
+        "coverage": 0.6778,
+        "selective_accuracy": 0.5082
+      },
+      {
+        "threshold": 0.19,
+        "covered": 57,
+        "coverage": 0.6333,
+        "selective_accuracy": 0.5263
+      },
+      {
+        "threshold": 0.2,
+        "covered": 45,
+        "coverage": 0.5,
+        "selective_accuracy": 0.4889
+      },
+      {
+        "threshold": 0.21,
+        "covered": 36,
+        "coverage": 0.4,
+        "selective_accuracy": 0.4722
+      },
+      {
+        "threshold": 0.22,
+        "covered": 26,
+        "coverage": 0.2889,
+        "selective_accuracy": 0.5769
+      },
+      {
+        "threshold": 0.23,
+        "covered": 23,
+        "coverage": 0.2556,
+        "selective_accuracy": 0.6087
+      },
+      {
+        "threshold": 0.24,
+        "covered": 17,
+        "coverage": 0.1889,
+        "selective_accuracy": 0.7059
+      },
+      {
+        "threshold": 0.25,
+        "covered": 14,
+        "coverage": 0.1556,
+        "selective_accuracy": 0.7857
+      },
+      {
+        "threshold": 0.26,
+        "covered": 9,
+        "coverage": 0.1,
+        "selective_accuracy": 0.8889
+      },
+      {
+        "threshold": 0.27,
+        "covered": 6,
+        "coverage": 0.0667,
+        "selective_accuracy": 0.8333
+      },
+      {
+        "threshold": 0.28,
+        "covered": 4,
+        "coverage": 0.0444,
+        "selective_accuracy": 1.0
+      },
+      {
+        "threshold": 0.29,
+        "covered": 3,
+        "coverage": 0.0333,
+        "selective_accuracy": 1.0
+      },
+      {
+        "threshold": 0.3,
+        "covered": 3,
+        "coverage": 0.0333,
+        "selective_accuracy": 1.0
+      },
+      {
+        "threshold": 0.31,
+        "covered": 2,
+        "coverage": 0.0222,
+        "selective_accuracy": 1.0
+      },
+      {
+        "threshold": 0.32,
+        "covered": 1,
+        "coverage": 0.0111,
+        "selective_accuracy": 1.0
+      },
+      {
+        "threshold": 0.33,
+        "covered": 1,
+        "coverage": 0.0111,
+        "selective_accuracy": 1.0
+      },
+      {
+        "threshold": 0.34,
+        "covered": 1,
+        "coverage": 0.0111,
+        "selective_accuracy": 1.0
+      },
+      {
+        "threshold": 0.35,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.36,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.37,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.38,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.39,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.4,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.41,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.42,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.43,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.44,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.45,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.46,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.47,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.48,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.49,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.5,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.51,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.52,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.53,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.54,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.55,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.56,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.57,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.58,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.59,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.6,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.61,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.62,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.63,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.64,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.65,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.66,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.67,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.68,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.69,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.7,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.71,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.72,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.73,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.74,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.75,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.76,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.77,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.78,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.79,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.8,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.81,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.82,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.83,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.84,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.85,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.86,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.87,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.88,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.89,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.9,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.91,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.92,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.93,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.94,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      },
+      {
+        "threshold": 0.95,
+        "covered": 0,
+        "coverage": 0.0,
+        "selective_accuracy": null
+      }
+    ],
+    "test_at_recommended_threshold": {
+      "threshold": 0.24,
+      "covered": 18,
+      "coverage": 0.2,
+      "selective_accuracy": 0.6111
+    }
+  },
+  "metrics": {
+    "validation": {
+      "category": {
+        "n": 90,
+        "accuracy": 0.5778,
+        "macro_f1": 0.4976,
+        "per_class_f1": {
+          "Hostel": 0.4615,
+          "Exam": 0.7273,
+          "Academic / Department": 0.7027,
+          "Infrastructure and facilities": 0.0,
+          "Safety and welfare": 0.5,
+          "Administrative / Fees": 0.9091,
+          "Library / Transport": 0.5625,
+          "Other": 0.1176
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Hostel",
+            "Exam",
+            "Academic / Department",
+            "Infrastructure and facilities",
+            "Safety and welfare",
+            "Administrative / Fees",
+            "Library / Transport",
+            "Other"
+          ],
+          "matrix": [
+            [
+              3,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              8,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              1,
+              3,
+              13,
+              0,
+              0,
+              0,
+              0,
+              1
+            ],
+            [
+              5,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              3,
+              3,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              2,
+              0,
+              15,
+              0,
+              0
+            ],
+            [
+              1,
+              1,
+              1,
+              3,
+              0,
+              0,
+              9,
+              6
+            ],
+            [
+              0,
+              0,
+              3,
+              0,
+              3,
+              0,
+              2,
+              1
+            ]
+          ]
+        }
+      },
+      "priority": {
+        "n": 90,
+        "accuracy": 0.6889,
+        "macro_f1": 0.6473,
+        "per_class_f1": {
+          "Low": 0.8276,
+          "Medium": 0.7123,
+          "High": 0.4242,
+          "Critical": 0.625
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Low",
+            "Medium",
+            "High",
+            "Critical"
+          ],
+          "matrix": [
+            [
+              24,
+              3,
+              3,
+              0
+            ],
+            [
+              4,
+              26,
+              8,
+              1
+            ],
+            [
+              0,
+              4,
+              7,
+              4
+            ],
+            [
+              0,
+              1,
+              0,
+              5
+            ]
+          ]
+        },
+        "critical_recall": 0.8333,
+        "high_or_critical_recall": 0.7619,
+        "high_or_critical_false_negatives": 5,
+        "high_or_critical_false_positives": 12
+      }
+    },
+    "test": {
+      "category": {
+        "n": 90,
+        "accuracy": 0.5111,
+        "macro_f1": 0.4742,
+        "per_class_f1": {
+          "Hostel": 0.6,
+          "Exam": 0.5556,
+          "Academic / Department": 0.0,
+          "Infrastructure and facilities": 0.4,
+          "Safety and welfare": 0.3636,
+          "Administrative / Fees": 0.5946,
+          "Library / Transport": 0.8182,
+          "Other": 0.4615
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Hostel",
+            "Exam",
+            "Academic / Department",
+            "Infrastructure and facilities",
+            "Safety and welfare",
+            "Administrative / Fees",
+            "Library / Transport",
+            "Other"
+          ],
+          "matrix": [
+            [
+              6,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              10,
+              6,
+              0,
+              0,
+              5,
+              0,
+              0
+            ],
+            [
+              0,
+              3,
+              0,
+              0,
+              3,
+              0,
+              0,
+              0
+            ],
+            [
+              3,
+              0,
+              0,
+              3,
+              3,
+              0,
+              0,
+              0
+            ],
+            [
+              2,
+              1,
+              3,
+              0,
+              4,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              3,
+              0,
+              11,
+              2,
+              1
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              9,
+              0
+            ],
+            [
+              3,
+              0,
+              0,
+              0,
+              0,
+              3,
+              0,
+              3
+            ]
+          ]
+        }
+      },
+      "priority": {
+        "n": 90,
+        "accuracy": 0.5333,
+        "macro_f1": 0.5562,
+        "per_class_f1": {
+          "Low": 0.6522,
+          "Medium": 0.4561,
+          "High": 0.383,
+          "Critical": 0.7333
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Low",
+            "Medium",
+            "High",
+            "Critical"
+          ],
+          "matrix": [
+            [
+              15,
+              5,
+              1,
+              0
+            ],
+            [
+              6,
+              13,
+              7,
+              1
+            ],
+            [
+              3,
+              12,
+              9,
+              6
+            ],
+            [
+              1,
+              0,
+              0,
+              11
+            ]
+          ]
+        },
+        "critical_recall": 0.9167,
+        "high_or_critical_recall": 0.619,
+        "high_or_critical_false_negatives": 16,
+        "high_or_critical_false_positives": 9
+      }
+    }
+  },
+  "files": {
+    "category.joblib": "b8eff3944515eeca25c2d50269f07364d32997ddbfbea00e32a6c4119cfa8f91",
+    "priority.joblib": "b1e153223336afd52ff813c91bfa72774d99683e38fe14031e4fae4ec16d0d9a"
+  }
+}

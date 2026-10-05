@@ -6,6 +6,7 @@ import app.models  # noqa: F401  (registers every model on Base.metadata)
 from app.core.config import get_settings
 from app.db.base import Base
 from app.db.session import create_db_engine
+from app.db.types import UTCDateTime
 
 config = context.config
 
@@ -16,6 +17,14 @@ target_metadata = Base.metadata
 settings = get_settings()
 
 
+def render_item(type_, obj, autogen_context):
+    # Migrations must not import application code; UTCDateTime is stored as a
+    # plain timezone-aware DateTime column, so render it as one.
+    if type_ == "type" and isinstance(obj, UTCDateTime):
+        return "sa.DateTime(timezone=True)"
+    return False
+
+
 def run_migrations_offline() -> None:
     """Emit SQL to stdout instead of connecting to a database."""
     context.configure(
@@ -24,6 +33,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         render_as_batch=settings.is_sqlite,
+        render_item=render_item,
     )
 
     with context.begin_transaction():
@@ -40,6 +50,7 @@ def run_migrations_online() -> None:
             # SQLite cannot ALTER most constraints; batch mode recreates the table instead.
             render_as_batch=settings.is_sqlite,
             compare_type=True,
+            render_item=render_item,
         )
 
         with context.begin_transaction():

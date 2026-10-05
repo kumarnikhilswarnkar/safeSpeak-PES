@@ -9,6 +9,7 @@ from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
+REPO_DIR = BACKEND_DIR.parent
 
 _DOMAIN_RE = re.compile(r"^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$")
 _PLACEHOLDER_MARKERS = ("changeme", "change_me", "change-me", "placeholder")
@@ -33,12 +34,30 @@ class Settings(BaseSettings):
     jwt_secret_key: SecretStr
     jwt_algorithm: Literal["HS256", "HS384", "HS512"] = "HS256"
     access_token_expire_minutes: int = Field(default=60, ge=5, le=1440)
+    # bcrypt work factor. 12 is the default; tests lower it to stay fast.
+    bcrypt_rounds: int = Field(default=12, ge=4, le=15)
 
     # Kept as raw comma-separated strings; use the parsed properties below.
+    # An empty domain list disables sign-in entirely (fail closed).
     allowed_email_domains: str = ""
     cors_origins: str = "http://localhost:5173"
 
     display_timezone: str = "Asia/Kolkata"
+
+    # AI triage. MODEL_DIR holds category.joblib, priority.joblib and metadata.json
+    # produced by ml/train_triage.py.
+    model_dir: Path = REPO_DIR / "ml" / "artifacts" / "v1"
+    # Complaints whose category or priority confidence is below this go to human
+    # review. Leave unset to use the threshold selected on validation data and
+    # recorded in the model's metadata.json.
+    confidence_threshold: float | None = Field(default=None, gt=0, le=1)
+    # High and Critical AI priorities always require human review.
+    review_high_severity: bool = True
+    # Share of the TAT left at which a deadline is shown as "due soon".
+    due_soon_fraction: float = Field(default=0.25, gt=0, lt=1)
+
+    # Enables demo-only endpoints such as simulating a TAT breach. Never in production.
+    demo_mode: bool = False
 
     @field_validator("database_url")
     @classmethod
@@ -71,6 +90,13 @@ class Settings(BaseSettings):
             raise ValueError(f"Invalid email domain(s) in ALLOWED_EMAIL_DOMAINS: {', '.join(invalid)}")
         return ",".join(domains)
 
+    @field_validator("demo_mode")
+    @classmethod
+    def _no_demo_mode_in_production(cls, value: bool, info) -> bool:
+        if value and info.data.get("environment") == "production":
+            raise ValueError("DEMO_MODE cannot be enabled in production")
+        return value
+
     @field_validator("display_timezone")
     @classmethod
     def _validate_timezone(cls, value: str) -> str:
@@ -91,6 +117,10 @@ class Settings(BaseSettings):
     @property
     def tz(self) -> ZoneInfo:
         return ZoneInfo(self.display_timezone)
+
+    @property
+    def is_production(self) -> bool:
+        return self.environment == "production"
 
     @property
     def is_sqlite(self) -> bool:

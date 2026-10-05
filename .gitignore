@@ -5,6 +5,8 @@
 *.pem
 *.key
 secrets/
+# Local-only files such as generated demo credentials
+*.local.*
 
 # Private research files: the annotation answer key must never be committed
 *PRIVATE*answer*
@@ -35,10 +37,16 @@ __pycache__/
 .coverage
 htmlcov/
 
-# Local databases
+# Local databases (and SQLite's temporary journal files)
 *.db
+*.db-journal
+*.db-wal
+*.db-shm
 *.sqlite
 *.sqlite3
+
+# Local AI-assistant / tool configuration
+.claude/
 
 # Node / frontend
 node_modules/
