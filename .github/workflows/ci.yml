@@ -45,13 +45,23 @@ jobs:
       - name: Install backend dependencies
         run: python -m pip install -r requirements-dev.txt
       - name: Backend tests (SQLite)
-        run: python -m pytest -m "not ml_integrity"
+        run: python -m pytest -m "not ml_integrity" --junitxml=../reports/pytest-sqlite.xml
       - name: Backend tests (PostgreSQL)
+        if: success() || failure()
         env:
           TEST_DATABASE_URL: postgresql+psycopg://postgres:ci-ephemeral-only@localhost:5432/safespeak_test
-        run: python -m pytest -m "not ml_integrity"
+        run: python -m pytest -m "not ml_integrity" --junitxml=../reports/pytest-postgres.xml
       - name: ML / data integrity (checksums, metadata, model loading, inference smoke)
-        run: python -m pytest -m ml_integrity
+        if: success() || failure()
+        run: python -m pytest -m ml_integrity --junitxml=../reports/pytest-ml-integrity.xml
+      - name: Publish test results (run summary + annotations)
+        if: always()
+        working-directory: .
+        run: >-
+          python scripts/ci_test_report.py
+          "Backend (SQLite)" reports/pytest-sqlite.xml
+          "Backend (PostgreSQL)" reports/pytest-postgres.xml
+          "ML integrity" reports/pytest-ml-integrity.xml
 
   frontend:
     name: Frontend production build
@@ -110,7 +120,8 @@ jobs:
       - name: Smoke test through the reverse proxy
         run: |
           set -a; . ./.env; set +a
-          python scripts/smoke_test.py http://localhost:8080 --escalation-wait 60
+          python scripts/smoke_test.py http://localhost:8080 --escalation-wait 60 | tee smoke.txt
+          { echo '### Docker Compose smoke test'; echo '```'; cat smoke.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - name: Verify persistence in PostgreSQL
         run: |
           set -a; . ./.env; set +a
