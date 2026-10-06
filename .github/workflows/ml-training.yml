@@ -1,0 +1,41 @@
+# SafeSpeak PES ML training (MANUAL ONLY: never runs on push).
+# Runs the reproducible training script on a clean runner, uploads the produced
+# artifacts and reports for review, and never commits or deploys anything.
+# A person reviews the results and commits a selected artifact explicitly.
+# Phase 2 replaces the default script with the new modular ML pipeline.
+name: ML training (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      script:
+        description: Training script to run (repository-relative)
+        default: ml/train_triage_v2.py
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install training dependencies
+        run: python -m pip install -r backend/requirements.txt
+      - name: Train (from the approved, checksummed dataset in ml/data; never live complaints)
+        run: python "${{ inputs.script }}"
+      - name: Upload artifacts and reports for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: ml-training-${{ github.run_id }}
+          path: |
+            ml/artifacts/
+            ml/reports/
+          retention-days: 30

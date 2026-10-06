@@ -1,0 +1,19 @@
+# Server deployment overrides (Phase 8):
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# Requires in .env: ENVIRONMENT=production, DEMO_MODE=false, SEED_DEMO_USERS=false,
+# ALLOWED_EMAIL_DOMAINS=<institutional domain>; TLS certificates in deploy/certs/
+# (fullchain.pem, privkey.pem; git-ignored). See docs/deployment.md.
+services:
+  backend:
+    environment:
+      ENVIRONMENT: production
+      DEMO_MODE: "false"
+
+  proxy:
+    ports: !override
+      - "80:80"
+      - "443:443"
+    volumes: !override
+      - ./deploy/nginx/tls.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deploy/nginx/proxy_headers.conf:/etc/nginx/snippets/proxy_headers.conf:ro
+      - ./deploy/certs:/etc/nginx/certs:ro

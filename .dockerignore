@@ -1,0 +1,33 @@
+# Build context for backend/Dockerfile is the repository root: send only what the
+# image needs (backend code + the selected ML artifact + reports). Never secrets,
+# databases, credentials, dependencies or personal deliverables.
+**/.git
+**/.env
+**/.env.*
+!**/.env.example
+**/*.db
+**/*.db-journal
+**/*.db-wal
+**/*.db-shm
+**/*.sqlite*
+**/*.local.*
+**/*PRIVATE*
+**/__pycache__
+**/.pytest_cache
+**/.venv
+**/venv
+**/node_modules
+.claude
+.local
+.github
+.devcontainer
+backups
+deliverables
+deploy/certs
+docs
+frontend
+scripts
+ml/data
+ml/.venv-ml
+backend/tests
+backend/scripts

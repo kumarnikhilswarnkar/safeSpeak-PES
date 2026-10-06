@@ -28,7 +28,8 @@ from app.models import Department, DepartmentKind, User
 from app.services.user_service import create_user
 from seed.prototype_rules import seed_demo_routing, seed_prototype_rules
 
-CREDENTIALS_FILE = BACKEND_DIR / "demo_credentials.local.txt"
+# Git-ignored local file; containers point DEMO_CREDENTIALS_FILE at a path inside the container.
+CREDENTIALS_FILE = Path(os.environ.get("DEMO_CREDENTIALS_FILE") or BACKEND_DIR / "demo_credentials.local.txt")
 
 SAMPLE_DEPARTMENTS = [
     ("MCA", "Department of Computer Applications (sample)", DepartmentKind.ACADEMIC),

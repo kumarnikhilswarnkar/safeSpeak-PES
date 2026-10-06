@@ -13,13 +13,26 @@ See [docs/architecture.md](docs/architecture.md) for the design, [docs/progress.
 for what is implemented, [docs/ml_evaluation.md](docs/ml_evaluation.md) for the model evaluation and
 [docs/FRIDAY_DEMO.md](docs/FRIDAY_DEMO.md) for the final demo.
 
+## Where SafeSpeak runs
+
+| Environment | How | Database |
+|---|---|---|
+| Local laptop (native) | backend virtualenv + `npm run dev` (below) | SQLite (lightweight development and tests) |
+| Docker / GitHub Codespaces | `docker compose up --build`: PostgreSQL, migrations, FastAPI, React/nginx, nginx reverse proxy | PostgreSQL ([docs/docker.md](docs/docker.md)) |
+| GitHub Actions | automated tests, ML integrity, frontend build, Docker builds, Compose smoke test | ephemeral PostgreSQL ([docs/ci-cd.md](docs/ci-cd.md)) |
+| Production | same images, HTTPS, proper secrets ([docs/deployment.md](docs/deployment.md)) | PostgreSQL |
+
+Security status: [docs/security.md](docs/security.md).
+
 ## Project structure
 
 ```
 backend/    FastAPI API, SQLAlchemy models, Alembic migrations, pytest tests
 frontend/   React + Vite single-page app
 ml/         Research dataset, training script and the trained triage model
-docs/       Architecture, progress, implementation flow, Review-II checklist and demo guide
+docs/       Architecture, security, Docker, CI/CD, deployment, progress and demo guides
+deploy/     nginx reverse-proxy and PostgreSQL role configuration for Docker
+scripts/    .env generator, Docker smoke test, SQLite backup
 ```
 
 ## Requirements

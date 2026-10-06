@@ -5,7 +5,7 @@ values for the prototype, not the real institutional hierarchy or service levels
 """
 from enum import StrEnum
 
-from sqlalchemy import Boolean, CheckConstraint, Float, ForeignKey, Integer, String
+from sqlalchemy import Boolean, CheckConstraint, Float, ForeignKey, Index, Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.permissions import AUTHORITY_ROLES
@@ -63,6 +63,16 @@ class EscalationRule(TimestampMixin, Base):
             "(target_scope = 'FIXED_DEPARTMENT' AND target_department_id IS NOT NULL)"
             " OR (target_scope <> 'FIXED_DEPARTMENT' AND target_department_id IS NULL)",
             name="department_matches_scope",
+        ),
+        # At most one ACTIVE rule per (category chain, level); the default chain
+        # (category NULL) is treated as its own chain.
+        Index(
+            "uq_escalation_rules_active_chain_level",
+            text("coalesce(category, '')"),
+            "escalation_level",
+            unique=True,
+            postgresql_where=text("is_active"),
+            sqlite_where=text("is_active"),
         ),
     )
 

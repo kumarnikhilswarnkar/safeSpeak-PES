@@ -1,0 +1,15 @@
+# Development overrides (local machine or Codespaces):
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+# - PostgreSQL reachable on 127.0.0.1:5433 (run tests / psql from the host)
+# - backend reachable on 127.0.0.1:8000 (Swagger at /docs) with auto-reload of backend/app
+services:
+  db:
+    ports:
+      - "127.0.0.1:5433:5432"
+
+  backend:
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./backend/app:/app/backend/app:ro
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app/backend/app"]

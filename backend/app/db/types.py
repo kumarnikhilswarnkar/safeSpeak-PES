@@ -1,7 +1,8 @@
 """Custom column types."""
 from datetime import UTC, datetime
 
-from sqlalchemy import DateTime
+from sqlalchemy import JSON, DateTime
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.types import TypeDecorator
 
 
@@ -29,3 +30,7 @@ class UTCDateTime(TypeDecorator):
         if value.tzinfo is None:
             return value.replace(tzinfo=UTC)
         return value.astimezone(UTC)
+
+
+# JSON documents: JSONB on PostgreSQL (binary, indexable), plain JSON elsewhere.
+JSONDocument = JSON().with_variant(JSONB(), "postgresql")

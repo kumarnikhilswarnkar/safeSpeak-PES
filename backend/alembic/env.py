@@ -6,6 +6,8 @@ import app.models  # noqa: F401  (registers every model on Base.metadata)
 from app.core.config import get_settings
 from app.db.base import Base
 from app.db.session import create_db_engine
+from sqlalchemy import JSON
+
 from app.db.types import UTCDateTime
 
 config = context.config
@@ -15,6 +17,10 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 settings = get_settings()
+# Migrations may run with a more privileged account than the API (deployment:
+# PostgreSQL owner role for DDL, least-privilege app role for the API).
+database_url = settings.migration_database_url or settings.database_url
+is_sqlite = database_url.startswith("sqlite")
 
 
 def render_item(type_, obj, autogen_context):
@@ -22,17 +28,20 @@ def render_item(type_, obj, autogen_context):
     # plain timezone-aware DateTime column, so render it as one.
     if type_ == "type" and isinstance(obj, UTCDateTime):
         return "sa.DateTime(timezone=True)"
+    if type_ == "type" and isinstance(obj, JSON):
+        # JSONDocument: JSONB on PostgreSQL, JSON elsewhere.
+        return 'sa.JSON().with_variant(postgresql.JSONB(), "postgresql")'
     return False
 
 
 def run_migrations_offline() -> None:
     """Emit SQL to stdout instead of connecting to a database."""
     context.configure(
-        url=settings.database_url,
+        url=database_url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-        render_as_batch=settings.is_sqlite,
+        render_as_batch=is_sqlite,
         render_item=render_item,
     )
 
@@ -41,14 +50,14 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    engine = create_db_engine(settings.database_url)
+    engine = create_db_engine(database_url)
 
     with engine.connect() as connection:
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
             # SQLite cannot ALTER most constraints; batch mode recreates the table instead.
-            render_as_batch=settings.is_sqlite,
+            render_as_batch=is_sqlite,
             compare_type=True,
             render_item=render_item,
         )

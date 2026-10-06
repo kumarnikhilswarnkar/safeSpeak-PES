@@ -10,6 +10,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import InterfaceError, OperationalError
 
 from app import __version__
 from app.api.v1.router import api_router
@@ -58,6 +59,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.session_factory = session_factory
     app.state.triage_model = triage_model
     app.state.tat_monitor = tat_monitor
+
+    @app.exception_handler(OperationalError)
+    @app.exception_handler(InterfaceError)
+    async def database_unavailable_handler(_request: Request, exc: Exception) -> JSONResponse:
+        # Connection-level failures (database down, network). Nothing is half-saved:
+        # every request runs in one transaction. Log the error class only; the
+        # engine hides bound parameters, so no complaint text reaches the log.
+        logger.error("Database unavailable: %s", type(exc).__name__)
+        return JSONResponse(
+            status_code=503,
+            content={"detail": "The database is temporarily unavailable. Please try again shortly."},
+        )
 
     @app.exception_handler(WorkflowError)
     async def workflow_error_handler(_request: Request, exc: WorkflowError) -> JSONResponse:

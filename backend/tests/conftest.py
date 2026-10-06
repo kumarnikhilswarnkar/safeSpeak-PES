@@ -8,6 +8,10 @@ from fastapi.testclient import TestClient
 TEST_SECRET = "test-secret-key-that-is-long-enough-0123456789"
 TEST_DOMAIN = "safespeak.test"
 TEST_PASSWORD = "correct-horse-battery"
+# Optional: run the suite against PostgreSQL (CI, Docker/Codespaces), e.g.
+# TEST_DATABASE_URL=postgresql+psycopg://user:pass@localhost:5433/safespeak_test
+# Every test gets a freshly created schema. Without it, each test uses its own SQLite file.
+TEST_DATABASE_URL = os.environ.get("TEST_DATABASE_URL")
 
 # app.main builds a module-level app from environment settings on import, so the
 # test environment must be in place before anything imports it. Environment
@@ -29,7 +33,7 @@ def settings(tmp_path: Path) -> Settings:
     return Settings(
         _env_file=None,
         environment="test",
-        database_url=f"sqlite:///{(tmp_path / 'test.db').as_posix()}",
+        database_url=TEST_DATABASE_URL or f"sqlite:///{(tmp_path / 'test.db').as_posix()}",
         jwt_secret_key=TEST_SECRET,
         allowed_email_domains=TEST_DOMAIN,
         bcrypt_rounds=4,
@@ -40,11 +44,25 @@ def settings(tmp_path: Path) -> Settings:
     )
 
 
+def reset_postgres_schema(url: str) -> None:
+    """Drop and recreate the public schema of the (dedicated) test database."""
+    from sqlalchemy import create_engine, text
+
+    engine = create_engine(url)
+    with engine.begin() as conn:
+        conn.execute(text("DROP SCHEMA IF EXISTS public CASCADE"))
+        conn.execute(text("CREATE SCHEMA public"))
+    engine.dispose()
+
+
 @pytest.fixture
 def app(settings: Settings):
+    if settings.is_postgres:
+        reset_postgres_schema(settings.database_url)
     application = create_app(settings)
     Base.metadata.create_all(application.state.engine)
-    return application
+    yield application
+    application.state.engine.dispose()
 
 
 @pytest.fixture

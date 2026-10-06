@@ -1,0 +1,19 @@
+{
+  // GitHub Codespaces / Dev Containers: cloud environment with Docker for the full stack.
+  // After it starts:  docker compose up --build   (see docs/docker.md, "Codespaces")
+  "name": "SafeSpeak PES",
+  "image": "mcr.microsoft.com/devcontainers/python:3.13",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" }
+  },
+  "hostRequirements": { "cpus": 2, "memory": "8gb" },
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": { "label": "SafeSpeak PES (proxy)", "onAutoForward": "notify" },
+    "5433": { "label": "PostgreSQL (dev override)", "onAutoForward": "silent" },
+    "8000": { "label": "Backend API (dev override)", "onAutoForward": "silent" }
+  },
+  // Creates .env with random secrets on first start (never committed, never printed).
+  "postCreateCommand": "python scripts/generate_env.py --if-missing"
+}

@@ -11,6 +11,11 @@ def create_db_engine(database_url: str) -> Engine:
     engine = create_engine(
         database_url,
         connect_args={"check_same_thread": False} if is_sqlite else {},
+        # Never put bound parameter values (complaint text, emails, hashes) into
+        # SQL error messages or logs.
+        hide_parameters=True,
+        # PostgreSQL: detect connections dropped by the server before using them.
+        pool_pre_ping=not is_sqlite,
     )
     if is_sqlite:
         event.listen(engine, "connect", _enable_sqlite_foreign_keys)

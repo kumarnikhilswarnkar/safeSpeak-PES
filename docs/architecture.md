@@ -6,6 +6,19 @@ This records the approved from-scratch design. Labels show where each decision c
 - **[AR]** additional requirements given by the project owner
 - **[TR]** technical recommendation, accepted as part of the approved blueprint
 
+## Environments and data storage
+
+| Environment | Components | Database |
+|---|---|---|
+| Local laptop (native) | uvicorn + Vite dev server | SQLite file (development/tests) |
+| Docker / Codespaces | nginx proxy → React (nginx) + FastAPI → PostgreSQL; one-shot migrate job | PostgreSQL 17, named volume |
+| GitHub Actions | tests on SQLite and PostgreSQL, ML integrity, image builds, Compose smoke test | ephemeral PostgreSQL |
+| Production (Phase 8) | same images, HTTPS (nginx `tls.conf`), proper secrets | PostgreSQL (managed or server) |
+
+All complaint text and personal data live only in the operational database. ML training data and
+model artifacts are separate: the backend loads a pinned artifact for inference and never trains on
+live complaints. Details: `docs/docker.md`, `docs/ci-cd.md`, `docs/deployment.md`, `docs/security.md`.
+
 ## Principle
 
 The AI recommends; an authorized human decides. **[PD]**
@@ -45,7 +58,7 @@ ml/ (offline research): dataset → train → evaluate → threshold analysis �
 | D4 | View-only users have read-only access within their configured scope (institution-wide if configured) and can never accept, override, reroute, resolve, close or modify complaints. |
 | D5 | The synthetic research dataset may be committed. The private annotation answer key, passwords, JWT secrets, `.env` files and API keys are never committed. |
 | D6 | Alembic migrations from day 1. |
-| D7 | `is_anonymous` is part of the schema; anonymous handling is built only if it does not delay the core workflow. |
+| D7 | Anonymous handling ("anonymous to reviewer") is future work. Correction: an `is_anonymous` column was planned but is **not** in the schema; the decision of 6 October 2026 keeps it out of the current scope. |
 
 Also fixed: complaint ID format `SSP-YYYY-NNNNNN` (generated from a database counter, never `count()+1`);
 roles come only from the authenticated account; complainants cannot choose priority; High and Critical

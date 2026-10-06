@@ -3,22 +3,23 @@ from enum import StrEnum
 from typing import Any
 
 from sqlalchemy import (
-    JSON,
     Boolean,
     CheckConstraint,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
     event,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.taxonomy import CATEGORIES, PRIORITIES
 from app.core.timeutil import utcnow
 from app.db.base import Base, TimestampMixin
-from app.db.types import UTCDateTime
+from app.db.types import JSONDocument, UTCDateTime
 from app.models._sql import sql_in
 from app.models.department import Department
 from app.models.rules import TatStage
@@ -45,6 +46,9 @@ class DecisionSource(StrEnum):
     HUMAN_OVERRIDDEN = "HUMAN_OVERRIDDEN"  # a reviewer changed category and/or priority
 
 
+_OPEN_NOT_EXHAUSTED = "status IN ('PENDING_REVIEW', 'ASSIGNED', 'IN_PROGRESS') AND breached_at_top = false"
+
+
 class Complaint(TimestampMixin, Base):
     """A grievance. category/priority hold the CURRENT working values (AI first,
     then the human decision); the original AI output lives in ai_predictions."""
@@ -63,22 +67,35 @@ class Complaint(TimestampMixin, Base):
             " OR (status NOT IN ('RESOLVED', 'CLOSED') AND resolved_at IS NULL)",
             name="resolved_at_matches_status",
         ),
+        # Reviewer queues: "open complaints assigned to me".
+        Index("ix_complaints_assigned_user_status", "assigned_user_id", "status"),
+        # TAT monitor: only open, not-yet-exhausted complaints are scanned by deadline.
+        Index(
+            "ix_complaints_open_deadline",
+            "deadline_at",
+            postgresql_where=text(_OPEN_NOT_EXHAUSTED),
+            sqlite_where=text(_OPEN_NOT_EXHAUSTED),
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     complaint_code: Mapped[str] = mapped_column(String(20), unique=True)
     complainant_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"), index=True)
     complainant_role: Mapped[str] = mapped_column(String(32))
-    complainant_department_id: Mapped[int | None] = mapped_column(ForeignKey("departments.id", ondelete="RESTRICT"))
+    complainant_department_id: Mapped[int | None] = mapped_column(
+        ForeignKey("departments.id", ondelete="RESTRICT"), index=True
+    )
     description: Mapped[str] = mapped_column(Text)
 
     category: Mapped[str] = mapped_column(String(40))
     priority: Mapped[str] = mapped_column(String(10))
     decision_source: Mapped[str] = mapped_column(String(24))
     status: Mapped[str] = mapped_column(String(20), index=True)
-    review_reasons: Mapped[list[str]] = mapped_column(JSON, default=list)
+    review_reasons: Mapped[list[str]] = mapped_column(JSONDocument, default=list)
 
-    handling_department_id: Mapped[int | None] = mapped_column(ForeignKey("departments.id", ondelete="RESTRICT"))
+    handling_department_id: Mapped[int | None] = mapped_column(
+        ForeignKey("departments.id", ondelete="RESTRICT"), index=True
+    )
     assigned_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"), index=True)
     escalation_level: Mapped[int] = mapped_column(Integer, default=1)
     escalated: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -131,10 +148,10 @@ class AIPrediction(Base):
     threshold: Mapped[float] = mapped_column(Float)
     threshold_source: Mapped[str] = mapped_column(String(40))
     flagged_for_review: Mapped[bool] = mapped_column(Boolean)
-    flag_reasons: Mapped[list[str]] = mapped_column(JSON, default=list)
-    probabilities: Mapped[dict[str, Any]] = mapped_column(JSON)
+    flag_reasons: Mapped[list[str]] = mapped_column(JSONDocument, default=list)
+    probabilities: Mapped[dict[str, Any]] = mapped_column(JSONDocument)
     # Contributing words per task and the keyword-baseline labels (model v2+).
-    explanation: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    explanation: Mapped[dict[str, Any] | None] = mapped_column(JSONDocument)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
 
     complaint: Mapped[Complaint] = relationship(back_populates="ai_prediction")
@@ -151,10 +168,10 @@ class ComplaintEvent(Base):
     # Empty actor means the system (for example, the escalation job).
     actor_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
     actor_role: Mapped[str | None] = mapped_column(String(32))
-    previous_value: Mapped[dict[str, Any] | None] = mapped_column(JSON)
-    new_value: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    previous_value: Mapped[dict[str, Any] | None] = mapped_column(JSONDocument)
+    new_value: Mapped[dict[str, Any] | None] = mapped_column(JSONDocument)
     remarks: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow, index=True)
 
     complaint: Mapped[Complaint] = relationship(back_populates="events")
     actor: Mapped[User | None] = relationship()

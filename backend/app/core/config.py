@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     environment: Literal["development", "test", "production"] = "development"
 
     database_url: str = "sqlite:///./safespeak_dev.db"
+    # Optional separate account for schema migrations (PostgreSQL owner role).
+    # The running API uses DATABASE_URL, which in deployment is a least-privilege
+    # role that can read and write rows but cannot change the schema or delete.
+    migration_database_url: str | None = None
 
     jwt_secret_key: SecretStr
     jwt_algorithm: Literal["HS256", "HS384", "HS512"] = "HS256"
@@ -133,6 +137,10 @@ class Settings(BaseSettings):
     @property
     def is_sqlite(self) -> bool:
         return self.database_url.startswith("sqlite")
+
+    @property
+    def is_postgres(self) -> bool:
+        return self.database_url.startswith("postgresql")
 
 
 @lru_cache

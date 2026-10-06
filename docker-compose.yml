@@ -1,0 +1,123 @@
+# SafeSpeak PES: complete application stack (production-like).
+#
+#   python scripts/generate_env.py      # once: creates .env with random secrets (git-ignored)
+#   docker compose up --build           # db -> migrate -> backend + frontend -> proxy
+#   docker compose run --rm seed        # once per fresh database: base data (+ demo accounts if enabled)
+#   open http://localhost:8080
+#
+# Development overrides: docker-compose.dev.yml. Server/HTTPS: docker-compose.prod.yml.
+# See docs/docker.md.
+name: safespeak
+
+x-backend-build: &backend-build
+  context: .
+  dockerfile: backend/Dockerfile
+  args:
+    MODEL_VERSION: ${MODEL_VERSION:-v2}
+
+# Settings shared by every container that runs backend code.
+x-backend-env: &backend-env
+  ENVIRONMENT: ${ENVIRONMENT:-development}
+  JWT_SECRET_KEY: ${JWT_SECRET_KEY:?set JWT_SECRET_KEY in .env (python scripts/generate_env.py)}
+  ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS:-safespeak.test}
+  DEMO_MODE: ${DEMO_MODE:-false}
+  DISPLAY_TIMEZONE: ${DISPLAY_TIMEZONE:-Asia/Kolkata}
+  TAT_MONITOR_ENABLED: ${TAT_MONITOR_ENABLED:-true}
+  TAT_MONITOR_INTERVAL_SECONDS: ${TAT_MONITOR_INTERVAL_SECONDS:-60}
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_SUPERUSER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:?set in .env}
+      OWNER_DB_USER: ${OWNER_DB_USER:-safespeak_owner}
+      OWNER_DB_PASSWORD: ${OWNER_DB_PASSWORD:?set in .env}
+      APP_DB_USER: ${APP_DB_USER:-safespeak_app}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set in .env}
+      APP_DB_NAME: ${APP_DB_NAME:-safespeak}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./deploy/postgres/init:/docker-entrypoint-initdb.d:ro
+      - ./deploy/postgres/app_role_grants.sql:/opt/safespeak/app_role_grants.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${APP_DB_NAME}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  # One-shot job: apply database migrations with the schema-owner account, then exit.
+  migrate:
+    build: *backend-build
+    image: safespeak-backend:local
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      <<: *backend-env
+      DATABASE_URL: postgresql+psycopg://${OWNER_DB_USER:-safespeak_owner}:${OWNER_DB_PASSWORD}@db:5432/${APP_DB_NAME:-safespeak}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  backend:
+    build: *backend-build
+    image: safespeak-backend:local
+    restart: unless-stopped
+    environment:
+      <<: *backend-env
+      # Least-privilege role: read/insert/update rows only (deploy/postgres/app_role_grants.sql).
+      DATABASE_URL: postgresql+psycopg://${APP_DB_USER:-safespeak_app}:${APP_DB_PASSWORD}@db:5432/${APP_DB_NAME:-safespeak}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  frontend:
+    build:
+      context: ./frontend
+    image: safespeak-frontend:local
+    restart: unless-stopped
+
+  proxy:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+    volumes:
+      - ./deploy/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deploy/nginx/proxy_headers.conf:/etc/nginx/snippets/proxy_headers.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO /dev/null http://127.0.0.1/healthz || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+
+  # Run on demand only:  docker compose run --rm seed
+  # Base data (sample departments, TAT rules, escalation chains); demo accounts only
+  # when SEED_DEMO_USERS=true (refused when ENVIRONMENT=production).
+  seed:
+    build: *backend-build
+    image: safespeak-backend:local
+    profiles: ["seed"]
+    command:
+      - sh
+      - -c
+      - python -m seed.base_data && if [ "$${SEED_DEMO_USERS}" = "true" ]; then python -m seed.demo_users; fi
+    environment:
+      <<: *backend-env
+      DATABASE_URL: postgresql+psycopg://${OWNER_DB_USER:-safespeak_owner}:${OWNER_DB_PASSWORD}@db:5432/${APP_DB_NAME:-safespeak}
+      SEED_DEMO_USERS: ${SEED_DEMO_USERS:-false}
+      # All demo accounts get this password (from .env); the credentials file stays inside the container.
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+      DEMO_CREDENTIALS_FILE: /tmp/demo_credentials.txt
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  pgdata:

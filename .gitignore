@@ -57,3 +57,8 @@ build/
 coverage/
 .cache/
 tmp/
+
+# Local database backups (contain personal/complaint data)
+backups/
+# Docker local secrets / seeded credentials
+.local/
