@@ -13,8 +13,8 @@ export default function RequireAuth({ roles, permission, children }) {
 
   if (status === 'loading') {
     return (
-      <div className="page-center">
-        <p className="muted" role="status">Loading…</p>
+      <div className="grid min-h-screen place-items-center text-sm text-slate-500" role="status">
+        Loading…
       </div>
     )
   }

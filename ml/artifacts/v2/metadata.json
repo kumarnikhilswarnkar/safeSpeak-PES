@@ -1,0 +1,291 @@
+{
+  "model_name": "hybrid-tfidf-lr",
+  "model_version": "v2",
+  "sklearn_version": "1.9.1",
+  "trained_on": "train+val (510 records)",
+  "dataset": {
+    "file": "SafeSpeak_dataset_split_600.csv",
+    "sha256": "66483ef778c0af0ae2e4e7656478e651f6d9f76eea1d54822be3c1f607fbd776",
+    "rows": 600,
+    "source_counts": {
+      "ai_generated_batch1_v2": 100,
+      "ai_generated_batch2": 100,
+      "ai_paraphrase_of_batch1": 200,
+      "ai_paraphrase_of_batch2": 200
+    },
+    "note": "Synthetic/controlled dataset used for model development and evaluation: 200 AI-generated seed complaints and 400 AI paraphrases. No real student complaints."
+  },
+  "labels": {
+    "category": [
+      "Hostel",
+      "Exam",
+      "Academic / Department",
+      "Infrastructure and facilities",
+      "Safety and welfare",
+      "Administrative / Fees",
+      "Library / Transport",
+      "Other"
+    ],
+    "priority": [
+      "Low",
+      "Medium",
+      "High",
+      "Critical"
+    ]
+  },
+  "calibration": {
+    "category": {
+      "method": "temperature",
+      "temperature": 1.1826
+    },
+    "priority": {
+      "method": "temperature",
+      "temperature": 0.3007
+    }
+  },
+  "confidence": {
+    "definition": "temperature-scaled softmax of decision scores; overall = min(category, priority)",
+    "recommended_threshold": 0.65,
+    "rule": "lowest threshold at which category and priority are each correct >= 75% out of fold among complaints at or above it (coverage >= 10%)"
+  },
+  "selected": {
+    "category": {
+      "model": "hybrid_kw_lr_C5",
+      "description": "TF-IDF word + char + keyword-count features + Logistic Regression (C=5)"
+    },
+    "priority": {
+      "model": "word_lr",
+      "description": "TF-IDF word 1-2 grams + Logistic Regression (v1 configuration)"
+    }
+  },
+  "metrics": {
+    "test": {
+      "category": {
+        "n": 90,
+        "accuracy": 0.6556,
+        "macro_precision": 0.6116,
+        "macro_recall": 0.6156,
+        "macro_f1": 0.5781,
+        "weighted_f1": 0.6365,
+        "per_class": {
+          "Hostel": {
+            "precision": 0.5,
+            "recall": 1.0,
+            "f1": 0.6667,
+            "support": 6
+          },
+          "Exam": {
+            "precision": 0.7143,
+            "recall": 0.9524,
+            "f1": 0.8163,
+            "support": 21
+          },
+          "Academic / Department": {
+            "precision": 0.1429,
+            "recall": 0.1667,
+            "f1": 0.1538,
+            "support": 6
+          },
+          "Infrastructure and facilities": {
+            "precision": 0.75,
+            "recall": 0.6667,
+            "f1": 0.7059,
+            "support": 9
+          },
+          "Safety and welfare": {
+            "precision": 0.75,
+            "recall": 0.25,
+            "f1": 0.375,
+            "support": 12
+          },
+          "Administrative / Fees": {
+            "precision": 1.0,
+            "recall": 0.6667,
+            "f1": 0.8,
+            "support": 18
+          },
+          "Library / Transport": {
+            "precision": 0.75,
+            "recall": 1.0,
+            "f1": 0.8571,
+            "support": 9
+          },
+          "Other": {
+            "precision": 0.2857,
+            "recall": 0.2222,
+            "f1": 0.25,
+            "support": 9
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Hostel",
+            "Exam",
+            "Academic / Department",
+            "Infrastructure and facilities",
+            "Safety and welfare",
+            "Administrative / Fees",
+            "Library / Transport",
+            "Other"
+          ],
+          "matrix": [
+            [
+              6,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              20,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              5,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              3,
+              0,
+              0,
+              6,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              3,
+              3,
+              0,
+              3,
+              0,
+              0,
+              3
+            ],
+            [
+              0,
+              0,
+              0,
+              1,
+              0,
+              12,
+              3,
+              2
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              9,
+              0
+            ],
+            [
+              3,
+              0,
+              3,
+              0,
+              1,
+              0,
+              0,
+              2
+            ]
+          ]
+        }
+      },
+      "priority": {
+        "n": 90,
+        "accuracy": 0.5,
+        "macro_precision": 0.5131,
+        "macro_recall": 0.5647,
+        "macro_f1": 0.5224,
+        "weighted_f1": 0.481,
+        "per_class": {
+          "Low": {
+            "precision": 0.5769,
+            "recall": 0.7143,
+            "f1": 0.6383,
+            "support": 21
+          },
+          "Medium": {
+            "precision": 0.3871,
+            "recall": 0.4444,
+            "f1": 0.4138,
+            "support": 27
+          },
+          "High": {
+            "precision": 0.5,
+            "recall": 0.2667,
+            "f1": 0.3478,
+            "support": 30
+          },
+          "Critical": {
+            "precision": 0.5882,
+            "recall": 0.8333,
+            "f1": 0.6897,
+            "support": 12
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Low",
+            "Medium",
+            "High",
+            "Critical"
+          ],
+          "matrix": [
+            [
+              15,
+              3,
+              1,
+              2
+            ],
+            [
+              7,
+              12,
+              7,
+              1
+            ],
+            [
+              2,
+              16,
+              8,
+              4
+            ],
+            [
+              2,
+              0,
+              0,
+              10
+            ]
+          ]
+        },
+        "critical_recall": 0.8333,
+        "high_or_critical_recall": 0.5238
+      }
+    }
+  },
+  "files": {
+    "category.joblib": "df6bbfd6030f1deaecffeccbac618f1151dcc9ebcbadb2fffb7ba129e1cd37db",
+    "priority.joblib": "6005a7512864fd025717e613630642df12099f9753590013e44d903eba0dbb3d"
+  }
+}

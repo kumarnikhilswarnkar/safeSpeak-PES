@@ -16,6 +16,7 @@ from app.api.v1.router import api_router
 from app.core.config import Settings, get_settings
 from app.db.session import create_db_engine, create_session_factory
 from app.services.errors import WorkflowError
+from app.services.tat_monitor import TatMonitor
 from app.services.triage_service import TriageModelError, load_triage_model
 
 logger = logging.getLogger("safespeak")
@@ -37,16 +38,26 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         logger.error("AI triage model not loaded: %s", exc)
         triage_model = None
 
+    session_factory = create_session_factory(engine)
+    tat_monitor = TatMonitor(
+        session_factory=session_factory,
+        interval_seconds=settings.tat_monitor_interval_seconds,
+        enabled=settings.tat_monitor_enabled,
+    )
+
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        tat_monitor.start()
         yield
+        await tat_monitor.stop()
         engine.dispose()
 
     app = FastAPI(title=settings.app_name, version=__version__, lifespan=lifespan)
     app.state.settings = settings
     app.state.engine = engine
-    app.state.session_factory = create_session_factory(engine)
+    app.state.session_factory = session_factory
     app.state.triage_model = triage_model
+    app.state.tat_monitor = tat_monitor
 
     @app.exception_handler(WorkflowError)
     async def workflow_error_handler(_request: Request, exc: WorkflowError) -> JSONResponse:

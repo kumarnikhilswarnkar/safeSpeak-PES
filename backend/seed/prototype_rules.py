@@ -35,6 +35,20 @@ SAMPLE_CATEGORY_CHAINS = {
     ],
 }
 
+# Category-specific chain that targets a named office instead of the
+# complainant's department. Added by seed_demo_routing() only when the office
+# exists (the demo seed creates it), so the core sample rules stay unchanged.
+SAMPLE_OFFICE_CHAINS = {
+    "Infrastructure and facilities": (
+        "FACILITIES",
+        [
+            (1, Role.DEPARTMENT_AUTHORITY, 1, TargetScope.FIXED_DEPARTMENT, "L1 Facilities Office (sample)"),
+            (2, Role.HIGHER_AUTHORITY, 3, TargetScope.INSTITUTION, "L3 Dean (sample)"),
+            (3, Role.HIGHER_AUTHORITY, 4, TargetScope.INSTITUTION, "L4 Director (sample)"),
+        ],
+    ),
+}
+
 # Hours for a reviewer to confirm a flagged complaint (any category, any level).
 SAMPLE_REVIEW_HOURS = {"Critical": 1, "High": 4, "Medium": 12, "Low": 24}
 
@@ -105,6 +119,32 @@ def seed_prototype_rules(db: Session) -> tuple[int, int]:
 
     db.flush()
     return tat_added, chain_added
+
+
+def seed_demo_routing(db: Session, departments: dict) -> int:
+    """Add SAMPLE_OFFICE_CHAINS for categories that have no rules yet, when the
+    target office exists. Idempotent. Returns the number of rules added."""
+    added = 0
+    for category, (office_code, chain) in SAMPLE_OFFICE_CHAINS.items():
+        office = departments.get(office_code)
+        exists = db.scalar(select(func.count()).select_from(EscalationRule).where(EscalationRule.category == category))
+        if office is None or exists:
+            continue
+        for level, role, authority_level, scope, label in chain:
+            db.add(
+                EscalationRule(
+                    category=category,
+                    escalation_level=level,
+                    target_role=role.value,
+                    target_authority_level=authority_level,
+                    target_scope=scope.value,
+                    target_department_id=office.id if scope == TargetScope.FIXED_DEPARTMENT else None,
+                    label=label,
+                )
+            )
+            added += 1
+    db.flush()
+    return added
 
 
 def main() -> int:

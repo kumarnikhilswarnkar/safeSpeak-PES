@@ -60,6 +60,21 @@ def _assign(db: Session, c: Complaint, routing: routing_service.RoutingResult) -
     c.handling_department_id = routing_service.department_for(routing.rule, c, routing.assignee)
 
 
+def _routing_snapshot(c: Complaint, routing: routing_service.RoutingResult) -> dict:
+    """Why this authority was chosen, kept in the audit event (shown as the routing reason)."""
+    return {
+        "routing": {
+            "rule_id": routing.rule.id,
+            "rule_label": routing.rule.label,
+            "chain": "category" if routing.rule.category else "default",
+            "category": c.category,
+            "level": routing.level,
+            "target_scope": routing.rule.target_scope,
+            "skipped_levels": routing.skipped_levels,
+        }
+    }
+
+
 def _set_deadline(db: Session, c: Complaint, stage: str, started_at: datetime) -> None:
     rule = tat_service.resolve_rule(db, stage, c.category, c.priority, c.escalation_level)
     tat_service.apply_deadline(c, rule, stage, started_at)
@@ -219,6 +234,7 @@ def submit(db: Session, settings: Settings, model: TriageModel, user: User, desc
             flagged_for_review=flagged,
             flag_reasons=reasons,
             probabilities=result.probabilities,
+            explanation=result.explanation or None,
         )
     )
 
@@ -250,7 +266,8 @@ def submit(db: Session, settings: Settings, model: TriageModel, user: User, desc
         )
     audit_service.record(
         db, c, "assigned", None,
-        new={**_assignment_snapshot(c), **tat_service.deadline_snapshot(c)},
+        new={**_assignment_snapshot(c), **tat_service.deadline_snapshot(c), **_routing_snapshot(c, routing)},
+        remarks="Automatic routing from the configured escalation chain",
     )
     db.commit()
     return _load(db, c.complaint_code)
@@ -284,8 +301,13 @@ def _confirm_review(db: Session, c: Complaint, reviewer: User, now: datetime) ->
     audit_service.record(
         db, c, "assigned", reviewer,
         previous=previous,
-        new={**_assignment_snapshot(c), **tat_service.deadline_snapshot(c), "skipped_levels": skipped},
-        remarks="Routed after human review",
+        new={
+            **_assignment_snapshot(c),
+            **tat_service.deadline_snapshot(c),
+            "skipped_levels": skipped,
+            **_routing_snapshot(c, routing),
+        },
+        remarks="Routed automatically for the reviewed category",
     )
 
 
@@ -440,7 +462,7 @@ def escalate_overdue(db: Session, triggered_by: User | None, now: datetime | Non
 
     outcomes = []
     for c in overdue:
-        trigger = {"triggered_by": _user_ref(triggered_by) if triggered_by else "scheduler"}
+        trigger = {"triggered_by": _user_ref(triggered_by) if triggered_by else "automatic TAT monitor"}
         previous = {**_assignment_snapshot(c), **tat_service.deadline_snapshot(c)}
         audit_service.record(db, c, "tat_breached", triggered_by, previous=previous, new=trigger)
 
@@ -464,7 +486,13 @@ def escalate_overdue(db: Session, triggered_by: User | None, now: datetime | Non
         audit_service.record(
             db, c, "escalation_triggered", triggered_by,
             previous=previous,
-            new={**_assignment_snapshot(c), **tat_service.deadline_snapshot(c), "skipped_levels": skipped, **trigger},
+            new={
+                **_assignment_snapshot(c),
+                **tat_service.deadline_snapshot(c),
+                "skipped_levels": skipped,
+                **_routing_snapshot(c, routing),
+                **trigger,
+            },
         )
         outcomes.append(
             EscalationOutcome(c.complaint_code, "escalated", from_level, c.escalation_level, _user_ref(c.assigned_user))
@@ -472,3 +500,38 @@ def escalate_overdue(db: Session, triggered_by: User | None, now: datetime | Non
 
     db.commit()
     return outcomes
+
+
+# --- routing context (shown on the complaint page) -----------------------------------
+
+def routing_context(db: Session, c: Complaint) -> dict:
+    """The configured chain for the complaint's current category, the level it is
+    at now, and the most recent automatic routing decision recorded in the audit trail."""
+    chain = routing_service.chain_for(db, c.category)
+    last = next(
+        (e for e in reversed(c.events) if e.new_value and "routing" in e.new_value),
+        None,
+    )
+    manual = next(
+        (e for e in reversed(c.events) if e.action == "rerouted"),
+        None,
+    )
+    return {
+        "chain_kind": "category" if chain and chain[0].category else "default",
+        "chain": [
+            {
+                "level": r.escalation_level,
+                "label": r.label,
+                "target_role": r.target_role,
+                "target_authority_level": r.target_authority_level,
+                "target_scope": r.target_scope,
+                "target_department": r.target_department.code if r.target_department else None,
+            }
+            for r in chain
+        ],
+        "current_level": c.escalation_level,
+        "last_decision": {**last.new_value["routing"], "at": last.created_at.isoformat(), "action": last.action}
+        if last
+        else None,
+        "manually_rerouted": manual is not None and (last is None or manual.id > last.id),
+    }

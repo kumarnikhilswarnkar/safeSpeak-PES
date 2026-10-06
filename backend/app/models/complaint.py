@@ -133,6 +133,8 @@ class AIPrediction(Base):
     flagged_for_review: Mapped[bool] = mapped_column(Boolean)
     flag_reasons: Mapped[list[str]] = mapped_column(JSON, default=list)
     probabilities: Mapped[dict[str, Any]] = mapped_column(JSON)
+    # Contributing words per task and the keyword-baseline labels (model v2+).
+    explanation: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
 
     complaint: Mapped[Complaint] = relationship(back_populates="ai_prediction")

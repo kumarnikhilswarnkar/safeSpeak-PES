@@ -1,5 +1,8 @@
 # Review-II Checklist
 
+> **Historical record of the Review-II state (model v1).** Changes since then are summarised in
+> [progress.md](progress.md), [ml_evaluation.md](ml_evaluation.md) and [architecture.md](architecture.md).
+
 Maps the faculty's "Expected demonstration on Monday, 5 October 2026" items to the current repository.
 All API paths are under `/api/v1`. Step letters refer to `docs/MONDAY_DEMO.md`.
 

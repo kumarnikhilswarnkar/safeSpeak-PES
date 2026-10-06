@@ -62,7 +62,7 @@ def test_configured_threshold_wins_over_model_metadata(settings, real_model):
     unset = settings.model_copy(update={"confidence_threshold": None})
     value, source = effective_threshold(unset, real_model)
     assert value == real_model.recommended_threshold
-    assert source == "MODEL_METADATA:v1"
+    assert source == f"MODEL_METADATA:{real_model.version}"
 
 
 def _result(cat_conf, pri_conf, priority="Medium"):

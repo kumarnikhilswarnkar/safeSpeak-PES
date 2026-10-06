@@ -71,6 +71,8 @@ class AIRecommendationOut(BaseModel):
     threshold_source: str
     flagged_for_review: bool
     flag_reasons: list[str]
+    # Contributing words per task and the keyword-baseline labels (model v2+).
+    explanation: dict[str, Any] | None = None
 
 
 class TatOut(BaseModel):
@@ -117,8 +119,39 @@ class EventOut(BaseModel):
     created_at: datetime
 
 
+class EscalationStepOut(BaseModel):
+    at: datetime
+    result: Literal["escalated", "exhausted"]
+    automatic: bool
+    from_level: int | None
+    to_level: int | None
+    from_assignee: dict[str, Any] | None
+    to_assignee: dict[str, Any] | None
+    previous_deadline_at: str | None
+    new_deadline_at: str | None
+
+
+class EscalationSummaryOut(BaseModel):
+    original_deadline_at: str | None
+    current_deadline_at: datetime
+    overdue_seconds: int | None
+    history: list[EscalationStepOut]
+
+
+class HumanDecisionOut(BaseModel):
+    action: str
+    reviewer: PersonOut | None
+    at: datetime
+    remarks: str | None
+    previous: dict[str, Any] | None
+    new: dict[str, Any] | None
+
+
 class ComplaintDetailOut(ComplaintOut):
     events: list[EventOut]
+    routing: dict[str, Any] | None = None
+    escalation: EscalationSummaryOut
+    human_decision: HumanDecisionOut | None = None
 
 
 class EscalationOutcomeOut(BaseModel):
@@ -163,6 +196,7 @@ def complaint_out(c: Complaint, settings: Settings) -> ComplaintOut:
             threshold_source=p.threshold_source,
             flagged_for_review=p.flagged_for_review,
             flag_reasons=p.flag_reasons or [],
+            explanation=p.explanation,
         ),
         complainant=_person(c.complainant),
         assigned_to=_person(c.assigned_user),
@@ -199,5 +233,48 @@ def event_out(e: ComplaintEvent) -> EventOut:
     )
 
 
-def complaint_detail_out(c: Complaint, settings: Settings) -> ComplaintDetailOut:
-    return ComplaintDetailOut(**complaint_out(c, settings).model_dump(), events=[event_out(e) for e in c.events])
+def _escalation_summary(c: Complaint, now: datetime) -> EscalationSummaryOut:
+    original = next((e.new_value["deadline_at"] for e in c.events if e.new_value and e.new_value.get("deadline_at")), None)
+    history = []
+    for e in c.events:
+        if e.action not in ("escalation_triggered", "escalation_exhausted"):
+            continue
+        prev, new = e.previous_value or {}, e.new_value or {}
+        exhausted = e.action == "escalation_exhausted"
+        history.append(
+            EscalationStepOut(
+                at=e.created_at,
+                result="exhausted" if exhausted else "escalated",
+                automatic=e.actor_user_id is None,
+                from_level=prev.get("escalation_level"),
+                to_level=None if exhausted else new.get("escalation_level"),
+                from_assignee=prev.get("assigned_user"),
+                to_assignee=None if exhausted else new.get("assigned_user"),
+                previous_deadline_at=prev.get("deadline_at"),
+                new_deadline_at=None if exhausted else new.get("deadline_at"),
+            )
+        )
+    overdue = int((now - c.deadline_at).total_seconds()) if c.resolved_at is None and c.deadline_at < now else None
+    return EscalationSummaryOut(
+        original_deadline_at=original, current_deadline_at=c.deadline_at, overdue_seconds=overdue, history=history
+    )
+
+
+def _human_decision(c: Complaint) -> HumanDecisionOut | None:
+    e = next((e for e in reversed(c.events) if e.action in ("accepted", "overridden")), None)
+    if e is None:
+        return None
+    return HumanDecisionOut(
+        action=e.action, reviewer=_person(e.actor), at=e.created_at, remarks=e.remarks,
+        previous=e.previous_value, new=e.new_value,
+    )
+
+
+def complaint_detail_out(c: Complaint, settings: Settings, routing: dict | None = None) -> ComplaintDetailOut:
+    return ComplaintDetailOut(
+        **complaint_out(c, settings).model_dump(),
+        events=[event_out(e) for e in c.events],
+        routing=routing,
+        escalation=_escalation_summary(c, utcnow()),
+        human_decision=_human_decision(c),
+    )

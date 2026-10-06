@@ -26,7 +26,7 @@ from app.core.security import hash_password
 from app.db.session import create_db_engine, create_session_factory
 from app.models import Department, DepartmentKind, User
 from app.services.user_service import create_user
-from seed.prototype_rules import seed_prototype_rules
+from seed.prototype_rules import seed_demo_routing, seed_prototype_rules
 
 CREDENTIALS_FILE = BACKEND_DIR / "demo_credentials.local.txt"
 
@@ -54,6 +54,8 @@ DEMO_USERS = [
     DemoUser("demo.authority", "Demo Department Authority (L1)", Role.DEPARTMENT_AUTHORITY, "MCA", 1),
     # A second L1 authority in another department: a valid reroute target in the demo.
     DemoUser("demo.authority.cse", "Demo CSE Department Authority (L1)", Role.DEPARTMENT_AUTHORITY, "CSE", 1),
+    # Facilities Office authority: receives Infrastructure complaints (sample office chain).
+    DemoUser("demo.facilities", "Demo Facilities Office Authority (L1)", Role.DEPARTMENT_AUTHORITY, "FACILITIES", 1),
     DemoUser("demo.higher", "Demo Higher Authority (L3)", Role.HIGHER_AUTHORITY, None, 3),
     DemoUser("demo.director", "Demo Director (L4)", Role.HIGHER_AUTHORITY, None, 4),
     DemoUser("demo.viewer", "Demo Viewer", Role.VIEWER),
@@ -116,6 +118,7 @@ def seed(reset_passwords: bool) -> int:
                 issued.append((demo, email, password))
 
         tat_added, chain_added = seed_prototype_rules(db)
+        chain_added += seed_demo_routing(db, departments)
         db.commit()
     engine.dispose()
 

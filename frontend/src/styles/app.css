@@ -1,0 +1,71 @@
+@import 'tailwindcss';
+
+/* SafeSpeak PES design tokens. Brand: deep navy with a restrained orange accent. */
+@theme {
+  --font-sans: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+
+  --color-brand-950: #08142c;
+  --color-brand-900: #0b1b3a;
+  --color-brand-800: #102657;
+  --color-brand-700: #14306b;
+  --color-brand-600: #1a3f8c;
+  --color-brand-500: #1f4aa8;
+  --color-brand-100: #e6ecf8;
+  --color-brand-50: #f2f5fc;
+  --color-accent-600: #d4660c;
+  --color-accent-500: #f07c1b;
+  --color-accent-100: #fdeedf;
+  --color-accent-50: #fff7ef;
+
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.06);
+  --shadow-pop: 0 10px 30px -10px rgb(15 23 42 / 0.25), 0 4px 10px -4px rgb(15 23 42 / 0.1);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-slate-50 text-slate-800;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent-500;
+  }
+}
+
+@layer components {
+  .card {
+    @apply min-w-0 rounded-xl border border-slate-200 bg-white shadow-(--shadow-card);
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-brand-700 text-white hover:bg-brand-800;
+  }
+  .btn-accent {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-accent-500 text-white hover:bg-accent-600;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-red-600 text-white hover:bg-red-700;
+  }
+  .input {
+    @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none disabled:bg-slate-100;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-slate-700;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold tracking-wide text-slate-500 uppercase;
+  }
+  .table-head {
+    @apply px-4 py-2.5 text-left text-xs font-semibold tracking-wide text-slate-500 uppercase;
+  }
+  .table-cell {
+    @apply px-4 py-3 align-middle text-sm;
+  }
+}

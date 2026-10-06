@@ -167,7 +167,7 @@ for other roles' areas. These guards only control what is displayed; the API enf
 ```
 POST /api/v1/concerns  (authenticated, submit_complaint permission; body: description only)
   1. complaint code SSP-YYYY-NNNNNN from the id_counters table (UPDATE ... RETURNING, per IST year)
-  2. AI triage: category + priority + confidence (TF-IDF + Logistic Regression, ml/artifacts/v1)
+  2. AI triage: category + priority + calibrated confidence + evidence (local hybrid model, ml/artifacts/v2)
   3. review check: needs human review if category or priority confidence < threshold,
      or AI priority is High/Critical (REVIEW_HIGH_SEVERITY)
   4. routing: first level of the escalation chain with an active authority (never the complainant)
@@ -178,7 +178,9 @@ POST /api/v1/concerns/{id}/review  (review_complaints permission AND assigned to
   accept | override (new category/priority) | reroute (target authority) | resolve (note required)
 
 POST /api/v1/concerns/{id}/simulate_breach  (admin, DEMO_MODE only)  → deadline moved into the past
-POST /api/v1/concerns/escalate-overdue      (admin)                   → overdue complaints move up the chain
+POST /api/v1/concerns/escalate-overdue      (admin)                   → run the TAT check now (same as the monitor)
+
+Automatic TAT monitor (background, every TAT_MONITOR_INTERVAL_SECONDS) → overdue complaints move up the chain
 ```
 
 ### Tables
@@ -205,11 +207,11 @@ restrict categories, priorities, statuses, decision sources, stages, scopes and 
 
 ### Confidence threshold
 
-Configured by `CONFIDENCE_THRESHOLD`. If unset, the threshold selected by `ml/train_triage.py` on the
-validation split is used (recorded in `metadata.json`): the lowest threshold at which complaints at or above
-it have both labels correct at least 70% of the time. For model v1 this is **0.24** (validation: 18.9% of
-complaints handled without review at 70.6% joint accuracy; test: 20% at 61.1%). Every prediction stores the
-threshold and its source.
+Configured by `CONFIDENCE_THRESHOLD`. If unset, the threshold recorded with the model is used. For model v2
+it is **0.65**, chosen on out-of-fold (cross-validation) predictions as the lowest value at which category
+and priority are each correct at least 75% of the time among complaints at or above it. Confidences are
+temperature-scaled softmax probabilities. Every prediction stores the threshold and its source. Full
+method and results: `docs/ml_evaluation.md`.
 
 ### Security rules in this slice
 
@@ -220,3 +222,66 @@ threshold and its source.
 - Reroute targets must be other active authority accounts.
 - The model files are loaded only if their SHA-256 matches `metadata.json`.
 - `simulate_breach` exists only when `DEMO_MODE=true`, which is refused in production.
+
+## Friday release: AI v2, automation and insights
+
+### Local AI model (v2)
+
+- `ml/train_triage_v2.py` compares a hand-written keyword baseline
+  (`app/services/keyword_features.py`), the v1 configuration and four improved candidates with 5-fold
+  grouped cross-validation, calibrates confidences (temperature scaling), selects the threshold, and
+  evaluates every model once on the same held-out test split. Output: `ml/artifacts/v2/` (checksummed) and
+  `ml/reports/evaluation.json` (served at `GET /api/v1/research/evaluation`).
+- Selected: category = TF-IDF words + character n-grams + keyword-count features + Logistic Regression;
+  priority = TF-IDF words + Logistic Regression. Runs inside the backend; no external AI service.
+- Evidence: for every prediction, the words (and keyword-list features) with the largest positive
+  contribution to the linear score, plus the keyword baseline's labels, are stored in
+  `ai_predictions.explanation` (migration `a3c91d5e7b20`, nullable, additive).
+- A model that cannot predict with the installed scikit-learn is refused at startup (clear log, 503 on
+  submission) instead of failing with a 500 later.
+
+### Automatic TAT monitor (`app/services/tat_monitor.py`)
+
+- Started in the FastAPI lifespan; an asyncio loop runs `complaint_service.escalate_overdue` in a worker
+  thread every `TAT_MONITOR_INTERVAL_SECONDS` (default 60) with the **system** as actor, so audit events show
+  "automatic TAT monitor".
+- One lock serialises automatic runs and the administrator's "run check now"
+  (`POST /api/v1/system/automation/run` and the older `POST /api/v1/concerns/escalate-overdue`).
+  Escalation is idempotent: the escalated complaint gets a new future deadline; at the top of the chain it is
+  marked `breached_at_top` once, stays with the highest authority and is flagged for the administrator.
+- Status (`GET /api/v1/system/automation`): running, interval, last automatic check, next check, run
+  history. Complaint codes in the history are shown to administrators only.
+- No Redis/Celery. The API must run with a single worker process (one monitor).
+
+### Routing reason and escalation history
+
+- Each automatic assignment event stores a `routing` block (rule, chain type, level, scope, category).
+  The complaint detail response adds `routing` (configured chain for the current category, current level,
+  last automatic decision), `escalation` (original deadline, current deadline, overdue seconds, every
+  escalation step with from/to level, assignee, deadlines and whether it was automatic) and
+  `human_decision` (accept/override, reviewer, time, comment, previous and new values).
+- The demo seed adds a sample Infrastructure chain targeting the Facilities Office
+  (`seed_demo_routing`), so a human correction to "Infrastructure" re-routes the complaint automatically.
+- Reviewer unavailable: only active accounts receive complaints; another eligible authority at the same
+  level is used if one exists, otherwise the level is skipped (audited as `routing_levels_skipped`).
+
+### Insights endpoints
+
+| Endpoint | Who | What |
+|---|---|---|
+| `GET /api/v1/analytics/overview` | any signed-in user | Counts, distributions, review/override rates, confidence histogram, escalations, resolution time; scoped to own / assigned / read-only scope |
+| `GET /api/v1/notifications` | any signed-in user | Recent audit events about the user's complaints or assignments (admins: escalations); in-app only |
+| `GET /api/v1/research/evaluation` | any signed-in user | Evaluation report + live model and threshold |
+| `GET /api/v1/system/automation` | any signed-in user | Monitor status (complaint codes for admins only) |
+| `POST /api/v1/system/automation/run` | admin | Run the TAT check now |
+| `GET /api/v1/system/rules` | any signed-in user | Configured TAT rules and escalation chains (read-only) |
+
+### Frontend
+
+React 19 + React Router (unchanged architecture) with Tailwind CSS v4 for styling, lucide-react icons and
+Recharts for charts. Pages: login, three role dashboards (complainant, reviewer, admin/viewer), submit with
+AI analysis result, case-management detail page (workflow stepper, AI analysis with evidence, AI vs final
+decision, review actions with confirmation dialog, assignment and routing reason, TAT, escalation history,
+audit timeline), complaint lists with search/filters/sorting, review queue tabs, TAT automation page, AI
+evaluation page, toasts and a notification bell.
+

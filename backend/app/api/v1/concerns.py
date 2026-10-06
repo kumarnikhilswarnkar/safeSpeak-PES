@@ -40,6 +40,10 @@ ScopedViewer = Annotated[User, Depends(require_permission(Permission.VIEW_SCOPED
 SystemOperator = Annotated[User, Depends(require_permission(Permission.MANAGE_RULES_AND_SETTINGS))]
 
 
+def _detail(db, c, settings) -> ComplaintDetailOut:
+    return complaint_detail_out(c, settings, complaint_service.routing_context(db, c))
+
+
 def _require_demo_mode(settings: AppSettings) -> None:
     if not settings.demo_mode:
         # Hidden entirely unless DEMO_MODE is enabled.
@@ -55,7 +59,7 @@ def submit_concern(
     model: Annotated[TriageModel, Depends(get_triage_model)],
 ) -> ComplaintDetailOut:
     c = complaint_service.submit(db, settings, model, user, payload.description)
-    return complaint_detail_out(c, settings)
+    return _detail(db, c, settings)
 
 
 @router.get("", response_model=list[ComplaintOut])
@@ -82,10 +86,11 @@ def pending_triage(user: Reviewer, db: DbSession, settings: AppSettings) -> list
 
 
 @router.post("/escalate-overdue", response_model=EscalationRunOut)
-def escalate_overdue(user: SystemOperator, db: DbSession) -> EscalationRunOut:
-    """Run the escalation job now. A background scheduler will call the same
-    service later; for now it is triggered by an administrator."""
-    outcomes = complaint_service.escalate_overdue(db, user)
+def escalate_overdue(user: SystemOperator, request: Request) -> EscalationRunOut:
+    """Run the TAT check now. The automatic TAT monitor runs the same check in the
+    background every TAT_MONITOR_INTERVAL_SECONDS; both share one lock, so a
+    complaint is never escalated twice by overlapping runs."""
+    outcomes = request.app.state.tat_monitor.run_once(user, raise_errors=True).outcomes
     return EscalationRunOut(
         processed=len(outcomes),
         outcomes=[
@@ -103,7 +108,7 @@ def escalate_overdue(user: SystemOperator, db: DbSession) -> EscalationRunOut:
 
 @router.get("/{concern_id}", response_model=ComplaintDetailOut)
 def get_concern(concern_id: str, user: CurrentUser, db: DbSession, settings: AppSettings) -> ComplaintDetailOut:
-    return complaint_detail_out(complaint_service.get_visible(db, user, concern_id), settings)
+    return _detail(db, complaint_service.get_visible(db, user, concern_id), settings)
 
 
 @router.get("/{concern_id}/reroute-targets", response_model=list[PersonOut])
@@ -126,7 +131,7 @@ def review_concern(
         target_user_id=payload.target_user_id,
         remarks=payload.remarks,
     )
-    return complaint_detail_out(c, settings)
+    return _detail(db, c, settings)
 
 
 @router.post("/{concern_id}/simulate_breach", response_model=ComplaintDetailOut)
@@ -137,4 +142,4 @@ def simulate_breach(
     settings: AppSettings,
     _demo: Annotated[None, Depends(_require_demo_mode)],
 ) -> ComplaintDetailOut:
-    return complaint_detail_out(complaint_service.simulate_breach(db, user, concern_id), settings)
+    return _detail(db, complaint_service.simulate_breach(db, user, concern_id), settings)

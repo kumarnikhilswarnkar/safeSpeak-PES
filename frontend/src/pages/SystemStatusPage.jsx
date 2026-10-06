@@ -1,24 +1,18 @@
+import { CheckCircle2, RefreshCw, XCircle } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
 import { apiRequest } from '../api/client.js'
-import Wordmark from '../components/Wordmark.jsx'
+import CenteredPage from '../components/CenteredPage.jsx'
+import { Alert, Spinner } from '../components/ui.jsx'
 
-const DISPLAY_TIMEZONE = 'Asia/Kolkata'
-
-function formatServerTime(isoValue) {
-  return new Intl.DateTimeFormat('en-IN', {
-    dateStyle: 'medium',
-    timeStyle: 'medium',
-    timeZone: DISPLAY_TIMEZONE,
-  }).format(new Date(isoValue))
-}
-
-function StatusRow({ label, value, tone }) {
+function Row({ label, ok, value }) {
   return (
-    <div className="status-row">
-      <dt>{label}</dt>
-      <dd>
-        {tone ? <span className={`pill pill--${tone}`}>{value}</span> : value}
+    <div className="flex items-center justify-between py-2.5 text-sm">
+      <dt className="text-slate-500">{label}</dt>
+      <dd className="flex items-center gap-1.5 font-medium text-slate-900">
+        {ok === true && <CheckCircle2 className="size-4 text-emerald-600" />}
+        {ok === false && <XCircle className="size-4 text-red-600" />}
+        {value}
       </dd>
     </div>
   )
@@ -29,7 +23,7 @@ export default function SystemStatusPage() {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  const checkHealth = useCallback(async (signal) => {
+  const check = useCallback(async (signal) => {
     setLoading(true)
     setError(null)
     try {
@@ -46,48 +40,36 @@ export default function SystemStatusPage() {
 
   useEffect(() => {
     const controller = new AbortController()
-    checkHealth(controller.signal)
+    check(controller.signal)
     return () => controller.abort()
-  }, [checkHealth])
-
-  const apiReachable = health !== null
+  }, [check])
 
   return (
-    <div className="page-center">
-      <main className="card status-card" aria-busy={loading}>
-        <header className="status-card__header">
-          <Wordmark size="lg" />
-          <p className="muted">Human-in-the-Loop Campus Concern Triage and Prioritization</p>
-        </header>
-
-        <h1 className="status-card__title">System status</h1>
-
-        {loading && !health && <p className="muted">Checking the server…</p>}
-
-        {!loading && !apiReachable && (
-          <p className="alert alert--danger" role="alert">
-            {error ?? 'The API did not respond'}. Start the backend and try again.
-          </p>
-        )}
-
-        {apiReachable && (
-          <dl className="status-list">
-            <StatusRow label="API" value="Reachable" tone="success" />
-            <StatusRow
-              label="Database"
-              value={health.database === 'ok' ? 'Connected' : 'Unavailable'}
-              tone={health.database === 'ok' ? 'success' : 'danger'}
-            />
-            <StatusRow label="Environment" value={health.environment} />
-            <StatusRow label="API version" value={health.version} />
-            <StatusRow label="Server time (IST)" value={formatServerTime(health.server_time_utc)} />
-          </dl>
-        )}
-
-        <button type="button" className="btn btn--primary" onClick={() => checkHealth()} disabled={loading}>
-          {loading ? 'Checking…' : 'Check again'}
-        </button>
-      </main>
-    </div>
+    <CenteredPage>
+      <h1 className="text-xl font-semibold text-slate-900">System status</h1>
+      {loading && !health && (
+        <p className="mt-4 flex items-center gap-2 text-sm text-slate-500">
+          <Spinner /> Checking the server…
+        </p>
+      )}
+      {!loading && !health && (
+        <Alert tone="red" className="mt-4">
+          {error ?? 'The API did not respond'}. Start the backend and try again.
+        </Alert>
+      )}
+      {health && (
+        <dl className="mt-4 divide-y divide-slate-100">
+          <Row label="API" ok value="Reachable" />
+          <Row label="Database" ok={health.database === 'ok'} value={health.database === 'ok' ? 'Connected' : 'Unavailable'} />
+          <Row label="AI triage model" ok={health.triage_model !== 'unavailable'} value={health.triage_model} />
+          <Row label="Environment" value={health.environment} />
+          <Row label="Demo mode" value={health.demo_mode ? 'On' : 'Off'} />
+          <Row label="API version" value={health.version} />
+        </dl>
+      )}
+      <button type="button" className="btn-secondary mt-6 w-full" onClick={() => check()} disabled={loading}>
+        <RefreshCw className="size-4" /> Check again
+      </button>
+    </CenteredPage>
   )
 }

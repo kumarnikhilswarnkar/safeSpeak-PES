@@ -1,5 +1,8 @@
 # Monday Review-II Demo (5 October 2026)
 
+> **Historical (Review-II, 5 October 2026, model v1, threshold 0.24).** For the final presentation use
+> [FRIDAY_DEMO.md](FRIDAY_DEMO.md): model v2 (threshold 0.65), automatic TAT monitor and the redesigned UI.
+
 One complete grievance workflow, shown live in the browser, with the API docs and tests as backup.
 
 ## Before the demo

@@ -13,10 +13,14 @@ from pathlib import Path
 from typing import Protocol
 
 import joblib
+import numpy as np
 import sklearn
+from scipy.sparse import csr_matrix
+from scipy.special import softmax
 
 from app.core.config import Settings
 from app.core.taxonomy import CATEGORIES, HIGH_SEVERITY_PRIORITIES, PRIORITIES
+from app.services.keyword_features import keyword_category, keyword_priority
 
 logger = logging.getLogger("safespeak.triage")
 
@@ -38,6 +42,9 @@ class TriageResult:
     priority: str
     priority_confidence: float
     probabilities: dict[str, dict[str, float]] = field(default_factory=dict)
+    # Evidence for the reviewer: contributing words per task and what the
+    # keyword baseline would have said. Empty when the model cannot provide it.
+    explanation: dict = field(default_factory=dict)
 
     @property
     def confidence(self) -> float:
@@ -93,10 +100,35 @@ class SklearnTriageModel:
         self.name = metadata["model_name"]
         self.version = metadata["model_version"]
         self.recommended_threshold = metadata.get("confidence", {}).get("recommended_threshold")
+        # Temperature scaling per task (v2+); absent for v1, which uses predict_proba.
+        self._temperatures = {
+            task: float(cfg["temperature"])
+            for task, cfg in metadata.get("calibration", {}).items()
+            if cfg.get("method") == "temperature"
+        }
+        self.calibrated = bool(self._temperatures)
+
+        # An older scikit-learn can unpickle the model but then fail on the first
+        # prediction; test once here so that shows up at startup, not as a 500.
+        try:
+            self.predict("model self-test")
+        except Exception as exc:
+            raise TriageModelError(
+                f"Model cannot predict with scikit-learn {sklearn.__version__} "
+                f"(trained with {metadata.get('sklearn_version')}); start the API with the project's .venv"
+            ) from exc
+
+    def _probabilities(self, pipeline, task: str, text: str) -> dict[str, float]:
+        temperature = self._temperatures.get(task)
+        if temperature is None:  # v1 artifacts: the classifier's own probabilities
+            probs = pipeline.predict_proba([text])[0]
+        else:  # v2+: temperature-scaled softmax of the decision scores
+            probs = softmax(np.asarray(pipeline.decision_function([text]))[0] / temperature)
+        return dict(zip(pipeline.classes_, probs))
 
     def predict(self, text: str) -> TriageResult:
-        category_probs = dict(zip(self._category.classes_, self._category.predict_proba([text])[0]))
-        priority_probs = dict(zip(self._priority.classes_, self._priority.predict_proba([text])[0]))
+        category_probs = self._probabilities(self._category, "category", text)
+        priority_probs = self._probabilities(self._priority, "priority", text)
         category = max(category_probs, key=category_probs.get)
         priority = max(priority_probs, key=priority_probs.get)
         return TriageResult(
@@ -110,7 +142,40 @@ class SklearnTriageModel:
                 "category": {str(k): round(float(v), 4) for k, v in category_probs.items()},
                 "priority": {str(k): round(float(v), 4) for k, v in priority_probs.items()},
             },
+            explanation={
+                "category_terms": _top_terms(self._category, text, str(category)),
+                "priority_terms": _top_terms(self._priority, text, str(priority)),
+                "keyword_baseline": {"category": keyword_category(text), "priority": keyword_priority(text)},
+            },
         )
+
+
+def _top_terms(pipeline, text: str, label: str, limit: int = 6) -> list[dict]:
+    """Words (and keyword-list hits) that pushed the linear score towards `label`:
+    contribution = feature value × the classifier's weight for that class. Exact for
+    linear models; character n-gram features are left out because fragments are
+    not readable. Returns [] if the pipeline is not a linear text model."""
+    try:
+        # Apply the fitted feature steps directly (a sliced Pipeline counts as unfitted).
+        x, names = [text], None
+        for _name, step in pipeline.steps[:-1]:
+            names = step.get_feature_names_out(names)
+            x = step.transform(x)
+        x = csr_matrix(x)
+        clf = pipeline.steps[-1][1]
+        weights = clf.coef_[list(clf.classes_).index(label)]
+    except (AttributeError, ValueError, IndexError):
+        return []
+    terms = []
+    for idx, value in zip(x.indices, x.data):
+        name = str(names[idx])
+        if "char__" in name:
+            continue
+        contribution = float(value * weights[idx])
+        if contribution > 0:
+            terms.append({"term": name.split("__", 1)[-1], "weight": round(contribution, 4)})
+    terms.sort(key=lambda t: t["weight"], reverse=True)
+    return terms[:limit]
 
 
 @lru_cache(maxsize=4)

@@ -7,7 +7,9 @@ import LoginPage from './pages/auth/LoginPage.jsx'
 import ComplaintDetailPage from './pages/complaints/ComplaintDetailPage.jsx'
 import { AllComplaintsPage, MyComplaintsPage, ReviewQueuePage } from './pages/complaints/ComplaintListPages.jsx'
 import SubmitComplaintPage from './pages/complaints/SubmitComplaintPage.jsx'
+import AutomationPage from './pages/AutomationPage.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
+import ResearchPage from './pages/ResearchPage.jsx'
 import RoleHomePage from './pages/RoleHomePage.jsx'
 import SystemStatusPage from './pages/SystemStatusPage.jsx'
 
@@ -37,6 +39,10 @@ export default function App() {
       <Route path="/concerns" element={guarded(<AllComplaintsPage />, { permission: 'view_scoped_complaints' })} />
       <Route path="/concerns/:code" element={guarded(<ComplaintDetailPage />)} />
       <Route path="/review" element={guarded(<ReviewQueuePage />, { permission: 'view_assigned_complaints' })} />
+
+      {/* Insights: aggregate views, available to every signed-in account (the API scopes the data). */}
+      <Route path="/automation" element={guarded(<AutomationPage />)} />
+      <Route path="/research" element={guarded(<ResearchPage />)} />
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

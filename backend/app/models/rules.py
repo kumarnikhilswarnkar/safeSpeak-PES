@@ -6,7 +6,7 @@ values for the prototype, not the real institutional hierarchy or service levels
 from enum import StrEnum
 
 from sqlalchemy import Boolean, CheckConstraint, Float, ForeignKey, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.permissions import AUTHORITY_ROLES
 from app.core.taxonomy import CATEGORIES, PRIORITIES
@@ -75,3 +75,5 @@ class EscalationRule(TimestampMixin, Base):
     target_department_id: Mapped[int | None] = mapped_column(ForeignKey("departments.id", ondelete="RESTRICT"))
     label: Mapped[str] = mapped_column(String(120))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    target_department: Mapped["Department | None"] = relationship()  # noqa: F821

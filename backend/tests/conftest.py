@@ -35,6 +35,8 @@ def settings(tmp_path: Path) -> Settings:
         bcrypt_rounds=4,
         confidence_threshold=0.5,
         demo_mode=True,
+        # Tests drive the monitor directly instead of waiting for the background loop.
+        tat_monitor_enabled=False,
     )
 
 

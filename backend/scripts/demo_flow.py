@@ -192,11 +192,13 @@ def main() -> None:
     expect(status, 200, breached)
     print(f"{normal['complaint_id']} deadline is now {when(breached['tat']['deadline_at'])} [{breached['tat']['state']}]")
 
-    step("13. Run the escalation job")
+    step("13. Run the escalation check now (the automatic TAT monitor runs the same check in the background)")
     status, run = api.call("POST", "/concerns/escalate-overdue", admin)
     expect(status, 200, run)
     for o in run["outcomes"]:
         print(f"{o['complaint_id']}: {o['result']}, level {o['from_level']} -> {o['to_level']}")
+    if run["processed"] == 0:
+        print("Nothing to do: the automatic monitor had already escalated it (see the audit trail below).")
     _, again = api.call("POST", "/concerns/escalate-overdue", admin)
     print(f"Running it again processes {again['processed']} complaint(s): no duplicate escalation")
 

@@ -6,8 +6,12 @@ Students and staff submit campus concerns. An AI model suggests a category, a pr
 confidence score; an authorized human reviewer always makes the final decision. Every complaint
 gets a turnaround time (TAT) and escalates to the next configured authority if that deadline is missed.
 
-See [docs/architecture.md](docs/architecture.md) for the design and [docs/progress.md](docs/progress.md)
-for what is implemented so far.
+Overdue complaints are detected and escalated by an automatic TAT monitor running inside the API, and
+every action is written to an append-only audit trail.
+
+See [docs/architecture.md](docs/architecture.md) for the design, [docs/progress.md](docs/progress.md)
+for what is implemented, [docs/ml_evaluation.md](docs/ml_evaluation.md) for the model evaluation and
+[docs/FRIDAY_DEMO.md](docs/FRIDAY_DEMO.md) for the final demo.
 
 ## Project structure
 
@@ -74,23 +78,31 @@ From the `backend` folder, without activating the virtual environment:
 
 | Purpose | Command |
 |---|---|
-| Start the API on port 8000 | `.venv\Scripts\python -m uvicorn app.main:app --reload --port 8000` |
+| Start the API on port 8000 (also starts the automatic TAT monitor) | `.venv\Scripts\python -m uvicorn app.main:app --reload --port 8000` |
 | Run all tests | `.venv\Scripts\python -m pytest` |
 | List every stored complaint with the total count (read-only) | `.venv\Scripts\python scripts\list_complaints.py` |
 | Show one complaint's database rows (read-only) | `.venv\Scripts\python scripts\show_complaint.py SSP-2026-000001` |
 | Swagger / OpenAPI | http://127.0.0.1:8000/docs |
 
 The two scripts open `backend/safespeak_dev.db` read-only and print no passwords, hashes or tokens.
-The full demo walkthrough is in [docs/MONDAY_DEMO.md](docs/MONDAY_DEMO.md).
+Always start the API with the project's `.venv` Python: the system Python may have an older
+scikit-learn that cannot run the model (the API then refuses to load it and submissions return 503).
+The final demo walkthrough is in [docs/FRIDAY_DEMO.md](docs/FRIDAY_DEMO.md).
 
 ## AI triage model
 
-`ml/train_triage.py` trains the category and priority models from `ml/data/SafeSpeak_dataset_split_600.csv`
-and writes `ml/artifacts/v1/`. From the repository root:
+The categorisation model is a local scikit-learn model that runs inside the backend; no external AI
+service is used. `ml/train_triage_v2.py` compares a keyword baseline with several ML models
+(5-fold grouped cross-validation, one held-out test set), calibrates the confidences, selects the
+review threshold and writes `ml/artifacts/v2/` plus the report `ml/reports/evaluation.json`
+(shown on the AI evaluation page). From the repository root:
 
 ```bash
-backend/.venv/Scripts/python ml/train_triage.py
+backend/.venv/Scripts/python ml/train_triage_v2.py
 ```
+
+The dataset is synthetic/controlled (AI-generated complaints and paraphrases), not real student data.
+`ml/train_triage.py` reproduces the earlier v1 model (Review-II).
 
 ## Frontend setup
 

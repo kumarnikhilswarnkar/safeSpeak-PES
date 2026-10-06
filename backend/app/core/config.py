@@ -46,7 +46,9 @@ class Settings(BaseSettings):
 
     # AI triage. MODEL_DIR holds category.joblib, priority.joblib and metadata.json
     # produced by ml/train_triage.py.
-    model_dir: Path = REPO_DIR / "ml" / "artifacts" / "v1"
+    model_dir: Path = REPO_DIR / "ml" / "artifacts" / "v2"
+    # Model evaluation report shown on the research page (ml/train_triage_v2.py).
+    evaluation_report: Path = REPO_DIR / "ml" / "reports" / "evaluation.json"
     # Complaints whose category or priority confidence is below this go to human
     # review. Leave unset to use the threshold selected on validation data and
     # recorded in the model's metadata.json.
@@ -55,6 +57,12 @@ class Settings(BaseSettings):
     review_high_severity: bool = True
     # Share of the TAT left at which a deadline is shown as "due soon".
     due_soon_fraction: float = Field(default=0.25, gt=0, lt=1)
+
+    # Automatic TAT monitor: a background task inside the API process that checks
+    # for overdue complaints and escalates them. Run the API with ONE worker
+    # process so only one monitor runs.
+    tat_monitor_enabled: bool = True
+    tat_monitor_interval_seconds: int = Field(default=60, ge=5, le=3600)
 
     # Enables demo-only endpoints such as simulating a TAT breach. Never in production.
     demo_mode: bool = False
