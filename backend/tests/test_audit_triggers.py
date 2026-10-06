@@ -13,6 +13,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 
 from app.core.config import BACKEND_DIR, Settings, get_settings
+from app.main import create_app
 from tests.conftest import TEST_DATABASE_URL, reset_postgres_schema
 from tests.workflow_fixtures import CONCERNS, submit, world  # noqa: F401
 
@@ -42,6 +43,15 @@ def settings(request, tmp_path: Path, monkeypatch) -> Settings:
         demo_mode=True,
         tat_monitor_enabled=False,
     )
+
+
+@pytest.fixture
+def app(settings: Settings):
+    # Keep the Alembic-built schema: the shared fixture would reset PostgreSQL and
+    # recreate tables with create_all, which does not create the triggers.
+    application = create_app(settings)
+    yield application
+    application.state.engine.dispose()
 
 
 @pytest.fixture
