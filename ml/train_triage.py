@@ -1,4 +1,7 @@
-"""Train the SafeSpeak triage models (category and priority) and pick the
+"""LEGACY (kept for the record; not used by the application). The current pipeline is
+ml/scripts/run_experiments.py -> ml/artifacts/v3. See ml/legacy/README.md.
+
+Train the SafeSpeak triage models (category and priority) and pick the
 confidence threshold from validation data.
 
 Usage (from the repository root, with the backend virtual environment):

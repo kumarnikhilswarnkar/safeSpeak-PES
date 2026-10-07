@@ -1,0 +1,777 @@
+{
+  "setfit_pilot": {
+    "candidate": "setfit_classifier",
+    "settings": {
+      "num_iterations": 20,
+      "num_epochs": 1,
+      "batch_size": 16
+    },
+    "max_seconds_per_fit": 600,
+    "fold": "development repeat 0 / fold 0 (category)",
+    "machine": {
+      "platform": "Windows-11-10.0.26300-SP0",
+      "processor": "Intel64 Family 6 Model 126 Stepping 5, GenuineIntel"
+    },
+    "gate_c_standard_cv_code": true,
+    "fit_1": {
+      "finished": false,
+      "wall_seconds": 720.8,
+      "stopped_at_limit": true,
+      "progress": {
+        "steps_done": 212,
+        "steps_total": 953,
+        "projected_fit_seconds": 3240
+      },
+      "log_tail": [
+        " 22%|##2       | 210/953 [11:18<2:23:50, 11.62s/it]",
+        " 22%|##2       | 211/953 [11:28<2:17:25, 11.11s/it]",
+        " 22%|##2       | 212/953 [11:33<1:53:08,  9.16s/it]"
+      ]
+    },
+    "gate_a_time": false,
+    "gate_b_reproducible": "not checked (gate a failed)",
+    "passed": false,
+    "status": "NOT EVALUATED",
+    "error": "one fit exceeded the 600 s limit on this machine (212/953 training steps after 720.8 s; projected 3240 s per fit)"
+  },
+  "tasks": {
+    "category": [
+      {
+        "number": 0,
+        "model": "majority_baseline",
+        "title": "Majority-class floor",
+        "status": "EVALUATED",
+        "selectable": false,
+        "cv": {
+          "accuracy": {
+            "mean": 0.1312,
+            "sd": 0.0115
+          },
+          "macro_precision": {
+            "mean": 0.0164,
+            "sd": 0.0014
+          },
+          "macro_recall": {
+            "mean": 0.125,
+            "sd": 0.0
+          },
+          "macro_f1": {
+            "mean": 0.029,
+            "sd": 0.0022
+          },
+          "weighted_f1": {
+            "mean": 0.0306,
+            "sd": 0.0053
+          }
+        },
+        "holdout": {
+          "accuracy": 0.125,
+          "macro_precision": 0.0156,
+          "macro_recall": 0.125,
+          "macro_f1": 0.0278,
+          "weighted_f1": 0.0278
+        },
+        "seconds": 5.0,
+        "selected": false,
+        "deployable": false,
+        "unconstrained_winner": false
+      },
+      {
+        "number": 1,
+        "model": "keyword_baseline",
+        "title": "Frozen keyword baseline",
+        "status": "EVALUATED",
+        "selectable": false,
+        "cv": {
+          "accuracy": {
+            "mean": 0.6311,
+            "sd": 0.0684
+          },
+          "macro_precision": {
+            "mean": 0.6594,
+            "sd": 0.0707
+          },
+          "macro_recall": {
+            "mean": 0.6312,
+            "sd": 0.0684
+          },
+          "macro_f1": {
+            "mean": 0.6159,
+            "sd": 0.0691
+          },
+          "weighted_f1": {
+            "mean": 0.616,
+            "sd": 0.0694
+          }
+        },
+        "holdout": {
+          "accuracy": 0.5917,
+          "macro_precision": 0.5537,
+          "macro_recall": 0.5979,
+          "macro_f1": 0.5605,
+          "weighted_f1": 0.5518
+        },
+        "seconds": 2.3,
+        "selected": false,
+        "deployable": false,
+        "unconstrained_winner": false
+      },
+      {
+        "number": 2,
+        "model": "tfidf_logistic",
+        "title": "TF-IDF words + Logistic Regression",
+        "status": "EVALUATED",
+        "selectable": true,
+        "cv": {
+          "accuracy": {
+            "mean": 0.5305,
+            "sd": 0.0658
+          },
+          "macro_precision": {
+            "mean": 0.5437,
+            "sd": 0.0673
+          },
+          "macro_recall": {
+            "mean": 0.5313,
+            "sd": 0.0653
+          },
+          "macro_f1": {
+            "mean": 0.5207,
+            "sd": 0.0643
+          },
+          "weighted_f1": {
+            "mean": 0.52,
+            "sd": 0.0645
+          }
+        },
+        "holdout": {
+          "accuracy": 0.5417,
+          "macro_precision": 0.5323,
+          "macro_recall": 0.5458,
+          "macro_f1": 0.5243,
+          "weighted_f1": 0.5251
+        },
+        "seconds": 3.2,
+        "selected": false,
+        "deployable": true,
+        "unconstrained_winner": false
+      },
+      {
+        "number": 3,
+        "model": "tfidf_svm",
+        "title": "TF-IDF words + Linear SVM",
+        "status": "EVALUATED",
+        "selectable": true,
+        "cv": {
+          "accuracy": {
+            "mean": 0.5246,
+            "sd": 0.0651
+          },
+          "macro_precision": {
+            "mean": 0.534,
+            "sd": 0.0634
+          },
+          "macro_recall": {
+            "mean": 0.5257,
+            "sd": 0.0645
+          },
+          "macro_f1": {
+            "mean": 0.5109,
+            "sd": 0.0618
+          },
+          "weighted_f1": {
+            "mean": 0.5099,
+            "sd": 0.0622
+          }
+        },
+        "holdout": {
+          "accuracy": 0.575,
+          "macro_precision": 0.5755,
+          "macro_recall": 0.5813,
+          "macro_f1": 0.5527,
+          "weighted_f1": 0.5517
+        },
+        "seconds": 3.9,
+        "selected": false,
+        "deployable": true,
+        "unconstrained_winner": false
+      },
+      {
+        "number": 4,
+        "model": "word_ngram_logistic",
+        "title": "Word 1-3-grams + Logistic Regression",
+        "status": "EVALUATED",
+        "selectable": true,
+        "cv": {
+          "accuracy": {
+            "mean": 0.483,
+            "sd": 0.0601
+          },
+          "macro_precision": {
+            "mean": 0.4893,
+            "sd": 0.0648
+          },
+          "macro_recall": {
+            "mean": 0.4831,
+            "sd": 0.0583
+          },
+          "macro_f1": {
+            "mean": 0.467,
+            "sd": 0.0577
+          },
+          "weighted_f1": {
+            "mean": 0.4669,
+            "sd": 0.0589
+          }
+        },
+        "holdout": {
+          "accuracy": 0.4917,
+          "macro_precision": 0.4769,
+          "macro_recall": 0.5007,
+          "macro_f1": 0.473,
+          "weighted_f1": 0.4694
+        },
+        "seconds": 10.1,
+        "selected": false,
+        "deployable": true,
+        "unconstrained_winner": false
+      },
+      {
+        "number": 5,
+        "model": "word_char_logistic",
+        "title": "Word + character n-grams + Logistic Regression",
+        "status": "EVALUATED",
+        "selectable": true,
+        "cv": {
+          "accuracy": {
+            "mean": 0.5589,
+            "sd": 0.0628
+          },
+          "macro_precision": {
+            "mean": 0.5698,
+            "sd": 0.0602
+          },
+          "macro_recall": {
+            "mean": 0.5597,
+            "sd": 0.0617
+          },
+          "macro_f1": {
+            "mean": 0.5465,
+            "sd": 0.0582
+          },
+          "weighted_f1": {
+            "mean": 0.5454,
+            "sd": 0.0594
+          }
+        },
+        "holdout": {
+          "accuracy": 0.575,
+          "macro_precision": 0.5841,
+          "macro_recall": 0.5785,
+          "macro_f1": 0.5707,
+          "weighted_f1": 0.5684
+        },
+        "seconds": 19.3,
+        "selected": false,
+        "deployable": true,
+        "unconstrained_winner": false
+      },
+      {
+        "number": 6,
+        "model": "word_char_svm",
+        "title": "Word + character n-grams + Linear SVM",
+        "status": "EVALUATED",
+        "selectable": true,
+        "cv": {
+          "accuracy": {
+            "mean": 0.5565,
+            "sd": 0.0651
+          },
+          "macro_precision": {
+            "mean": 0.565,
+            "sd": 0.0634
+          },
+          "macro_recall": {
+            "mean": 0.558,
+            "sd": 0.0645
+          },
+          "macro_f1": {
+            "mean": 0.5424,
+            "sd": 0.0625
+          },
+          "weighted_f1": {
+            "mean": 0.5409,
+            "sd": 0.0631
+          }
+        },
+        "holdout": {
+          "accuracy": 0.55,
+          "macro_precision": 0.5562,
+          "macro_recall": 0.5576,
+          "macro_f1": 0.5397,
+          "weighted_f1": 0.5375
+        },
+        "seconds": 11.3,
+        "selected": false,
+        "deployable": true,
+        "unconstrained_winner": false
+      },
+      {
+        "number": 7,
+        "model": "hybrid_classifier",
+        "title": "Hybrid: words + characters + keyword counts + Logistic Regression",
+        "status": "EVALUATED",
+        "selectable": true,
+        "cv": {
+          "accuracy": {
+            "mean": 0.647,
+            "sd": 0.0613
+          },
+          "macro_precision": {
+            "mean": 0.658,
+            "sd": 0.0715
+          },
+          "macro_recall": {
+            "mean": 0.6479,
+            "sd": 0.0623
+          },
+          "macro_f1": {
+            "mean": 0.6361,
+            "sd": 0.0633
+          },
+          "weighted_f1": {
+            "mean": 0.6355,
+            "sd": 0.0629
+          }
+        },
+        "holdout": {
+          "accuracy": 0.65,
+          "macro_precision": 0.6887,
+          "macro_recall": 0.6507,
+          "macro_f1": 0.6476,
+          "weighted_f1": 0.6429
+        },
+        "seconds": 32.4,
+        "selected": true,
+        "deployable": true,
+        "unconstrained_winner": false
+      },
+      {
+        "number": 8,
+        "model": "minilm_logistic",
+        "title": "MiniLM sentence embeddings + Logistic Regression",
+        "status": "EVALUATED",
+        "selectable": true,
+        "cv": {
+          "accuracy": {
+            "mean": 0.6183,
+            "sd": 0.048
+          },
+          "macro_precision": {
+            "mean": 0.6309,
+            "sd": 0.0658
+          },
+          "macro_recall": {
+            "mean": 0.6203,
+            "sd": 0.0492
+          },
+          "macro_f1": {
+            "mean": 0.605,
+            "sd": 0.054
+          },
+          "weighted_f1": {
+            "mean": 0.6037,
+            "sd": 0.053
+          }
+        },
+        "holdout": {
+          "accuracy": 0.5917,
+          "macro_precision": 0.6051,
+          "macro_recall": 0.6035,
+          "macro_f1": 0.5935,
+          "weighted_f1": 0.5883
+        },
+        "seconds": 48.4,
+        "selected": false,
+        "deployable": false,
+        "unconstrained_winner": true
+      },
+      {
+        "number": 9,
+        "model": "setfit_classifier",
+        "title": "SetFit (contrastive MiniLM fine-tuning + LR head)",
+        "status": "NOT EVALUATED",
+        "reason": "one fit exceeded the 600 s limit on this machine (212/953 training steps after 720.8 s; projected 3240 s per fit)"
+      }
+    ],
+    "priority": [
+      {
+        "number": 0,
+        "model": "majority_baseline",
+        "title": "Majority-class floor",
+        "status": "EVALUATED",
+        "selectable": false,
+        "cv": {
+          "accuracy": {
+            "mean": 0.3749,
+            "sd": 0.0836
+          },
+          "macro_precision": {
+            "mean": 0.0937,
+            "sd": 0.0209
+          },
+          "macro_recall": {
+            "mean": 0.25,
+            "sd": 0.0
+          },
+          "macro_f1": {
+            "mean": 0.1351,
+            "sd": 0.0214
+          },
+          "weighted_f1": {
+            "mean": 0.2094,
+            "sd": 0.0823
+          }
+        },
+        "holdout": {
+          "accuracy": 0.25,
+          "macro_precision": 0.0625,
+          "macro_recall": 0.25,
+          "macro_f1": 0.1,
+          "weighted_f1": 0.1
+        },
+        "seconds": 1.0,
+        "selected": false,
+        "deployable": false,
+        "unconstrained_winner": false
+      },
+      {
+        "number": 1,
+        "model": "keyword_baseline",
+        "title": "Frozen keyword baseline",
+        "status": "EVALUATED",
+        "selectable": false,
+        "cv": {
+          "accuracy": {
+            "mean": 0.3545,
+            "sd": 0.0727
+          },
+          "macro_precision": {
+            "mean": 0.3685,
+            "sd": 0.138
+          },
+          "macro_recall": {
+            "mean": 0.2842,
+            "sd": 0.0651
+          },
+          "macro_f1": {
+            "mean": 0.2456,
+            "sd": 0.0714
+          },
+          "weighted_f1": {
+            "mean": 0.2885,
+            "sd": 0.0773
+          }
+        },
+        "holdout": {
+          "accuracy": 0.375,
+          "macro_precision": 0.6352,
+          "macro_recall": 0.3565,
+          "macro_f1": 0.3221,
+          "weighted_f1": 0.3459
+        },
+        "seconds": 1.3,
+        "selected": false,
+        "deployable": false,
+        "unconstrained_winner": false
+      },
+      {
+        "number": 2,
+        "model": "tfidf_logistic",
+        "title": "TF-IDF words + Logistic Regression",
+        "status": "EVALUATED",
+        "selectable": true,
+        "cv": {
+          "accuracy": {
+            "mean": 0.5973,
+            "sd": 0.0752
+          },
+          "macro_precision": {
+            "mean": 0.6168,
+            "sd": 0.075
+          },
+          "macro_recall": {
+            "mean": 0.5894,
+            "sd": 0.0755
+          },
+          "macro_f1": {
+            "mean": 0.5854,
+            "sd": 0.0721
+          },
+          "weighted_f1": {
+            "mean": 0.5929,
+            "sd": 0.078
+          }
+        },
+        "holdout": {
+          "accuracy": 0.55,
+          "macro_precision": 0.5709,
+          "macro_recall": 0.5684,
+          "macro_f1": 0.5619,
+          "weighted_f1": 0.5535
+        },
+        "seconds": 2.5,
+        "selected": false,
+        "deployable": true,
+        "unconstrained_winner": false
+      },
+      {
+        "number": 3,
+        "model": "tfidf_svm",
+        "title": "TF-IDF words + Linear SVM",
+        "status": "EVALUATED",
+        "selectable": true,
+        "cv": {
+          "accuracy": {
+            "mean": 0.5934,
+            "sd": 0.075
+          },
+          "macro_precision": {
+            "mean": 0.6059,
+            "sd": 0.079
+          },
+          "macro_recall": {
+            "mean": 0.5857,
+            "sd": 0.0694
+          },
+          "macro_f1": {
+            "mean": 0.577,
+            "sd": 0.0711
+          },
+          "weighted_f1": {
+            "mean": 0.5866,
+            "sd": 0.0812
+          }
+        },
+        "holdout": {
+          "accuracy": 0.5167,
+          "macro_precision": 0.546,
+          "macro_recall": 0.5337,
+          "macro_f1": 0.5296,
+          "weighted_f1": 0.521
+        },
+        "seconds": 2.2,
+        "selected": false,
+        "deployable": true,
+        "unconstrained_winner": false
+      },
+      {
+        "number": 4,
+        "model": "word_ngram_logistic",
+        "title": "Word 1-3-grams + Logistic Regression",
+        "status": "EVALUATED",
+        "selectable": true,
+        "cv": {
+          "accuracy": {
+            "mean": 0.6007,
+            "sd": 0.0692
+          },
+          "macro_precision": {
+            "mean": 0.617,
+            "sd": 0.0679
+          },
+          "macro_recall": {
+            "mean": 0.5769,
+            "sd": 0.0684
+          },
+          "macro_f1": {
+            "mean": 0.5732,
+            "sd": 0.0704
+          },
+          "weighted_f1": {
+            "mean": 0.5892,
+            "sd": 0.0744
+          }
+        },
+        "holdout": {
+          "accuracy": 0.525,
+          "macro_precision": 0.5608,
+          "macro_recall": 0.5448,
+          "macro_f1": 0.5383,
+          "weighted_f1": 0.5282
+        },
+        "seconds": 5.5,
+        "selected": false,
+        "deployable": true,
+        "unconstrained_winner": false
+      },
+      {
+        "number": 5,
+        "model": "word_char_logistic",
+        "title": "Word + character n-grams + Logistic Regression",
+        "status": "EVALUATED",
+        "selectable": true,
+        "cv": {
+          "accuracy": {
+            "mean": 0.6071,
+            "sd": 0.0559
+          },
+          "macro_precision": {
+            "mean": 0.6342,
+            "sd": 0.0522
+          },
+          "macro_recall": {
+            "mean": 0.5924,
+            "sd": 0.0511
+          },
+          "macro_f1": {
+            "mean": 0.5884,
+            "sd": 0.052
+          },
+          "weighted_f1": {
+            "mean": 0.6016,
+            "sd": 0.0603
+          }
+        },
+        "holdout": {
+          "accuracy": 0.575,
+          "macro_precision": 0.6063,
+          "macro_recall": 0.5934,
+          "macro_f1": 0.587,
+          "weighted_f1": 0.5784
+        },
+        "seconds": 16.9,
+        "selected": true,
+        "deployable": true,
+        "unconstrained_winner": true
+      },
+      {
+        "number": 6,
+        "model": "word_char_svm",
+        "title": "Word + character n-grams + Linear SVM",
+        "status": "EVALUATED",
+        "selectable": true,
+        "cv": {
+          "accuracy": {
+            "mean": 0.6097,
+            "sd": 0.0656
+          },
+          "macro_precision": {
+            "mean": 0.6322,
+            "sd": 0.0611
+          },
+          "macro_recall": {
+            "mean": 0.5994,
+            "sd": 0.0605
+          },
+          "macro_f1": {
+            "mean": 0.5938,
+            "sd": 0.0611
+          },
+          "weighted_f1": {
+            "mean": 0.6041,
+            "sd": 0.0709
+          }
+        },
+        "holdout": {
+          "accuracy": 0.575,
+          "macro_precision": 0.6076,
+          "macro_recall": 0.5905,
+          "macro_f1": 0.584,
+          "weighted_f1": 0.5784
+        },
+        "seconds": 11.3,
+        "selected": false,
+        "deployable": true,
+        "unconstrained_winner": false
+      },
+      {
+        "number": 7,
+        "model": "hybrid_classifier",
+        "title": "Hybrid: words + characters + keyword counts + Logistic Regression",
+        "status": "EVALUATED",
+        "selectable": true,
+        "cv": {
+          "accuracy": {
+            "mean": 0.5811,
+            "sd": 0.069
+          },
+          "macro_precision": {
+            "mean": 0.5916,
+            "sd": 0.0839
+          },
+          "macro_recall": {
+            "mean": 0.5626,
+            "sd": 0.0615
+          },
+          "macro_f1": {
+            "mean": 0.5545,
+            "sd": 0.0675
+          },
+          "weighted_f1": {
+            "mean": 0.5753,
+            "sd": 0.0737
+          }
+        },
+        "holdout": {
+          "accuracy": 0.5417,
+          "macro_precision": 0.5737,
+          "macro_recall": 0.5523,
+          "macro_f1": 0.5509,
+          "weighted_f1": 0.5437
+        },
+        "seconds": 17.7,
+        "selected": false,
+        "deployable": true,
+        "unconstrained_winner": false
+      },
+      {
+        "number": 8,
+        "model": "minilm_logistic",
+        "title": "MiniLM sentence embeddings + Logistic Regression",
+        "status": "EVALUATED",
+        "selectable": true,
+        "cv": {
+          "accuracy": {
+            "mean": 0.5285,
+            "sd": 0.0668
+          },
+          "macro_precision": {
+            "mean": 0.5191,
+            "sd": 0.0669
+          },
+          "macro_recall": {
+            "mean": 0.539,
+            "sd": 0.0754
+          },
+          "macro_f1": {
+            "mean": 0.5139,
+            "sd": 0.0672
+          },
+          "weighted_f1": {
+            "mean": 0.527,
+            "sd": 0.0694
+          }
+        },
+        "holdout": {
+          "accuracy": 0.7167,
+          "macro_precision": 0.7082,
+          "macro_recall": 0.7043,
+          "macro_f1": 0.7045,
+          "weighted_f1": 0.712
+        },
+        "seconds": 1.9,
+        "selected": false,
+        "deployable": false,
+        "unconstrained_winner": false
+      },
+      {
+        "number": 9,
+        "model": "setfit_classifier",
+        "title": "SetFit (contrastive MiniLM fine-tuning + LR head)",
+        "status": "NOT EVALUATED",
+        "reason": "one fit exceeded the 600 s limit on this machine (212/953 training steps after 720.8 s; projected 3240 s per fit)"
+      }
+    ]
+  }
+}

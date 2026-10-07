@@ -1,17 +1,17 @@
 # SafeSpeak PES ML training (MANUAL ONLY: never runs on push).
-# Runs the reproducible training script on a clean runner, uploads the produced
-# artifacts and reports for review, and never commits or deploys anything.
-# A person reviews the results and commits a selected artifact explicitly.
-# Phase 2 replaces the default script with the new modular ML pipeline.
+# Runs the reproducible v3 pipeline (ml/scripts/run_experiments.py) on a clean runner,
+# uploads the produced artifacts and reports for review, and never commits or deploys
+# anything. A person reviews the results and commits a selected artifact explicitly.
+# Training data is the checksummed dataset in ml/data; never live complaints.
 name: ML training (manual)
 
 on:
   workflow_dispatch:
     inputs:
-      script:
-        description: Training script to run (repository-relative)
-        default: ml/train_triage_v2.py
-        required: true
+      run_setfit_pilot:
+        description: Run the SetFit feasibility gate first (slow; time-limited to 10 min per fit)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -19,23 +19,31 @@ permissions:
 jobs:
   train:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
           cache: pip
-          cache-dependency-path: backend/requirements.txt
-      - name: Install training dependencies
-        run: python -m pip install -r backend/requirements.txt
-      - name: Train (from the approved, checksummed dataset in ml/data; never live complaints)
-        run: python "${{ inputs.script }}"
+          cache-dependency-path: ml/requirements-experiments.txt
+      - name: Install experiment dependencies (pinned; CPU-only torch)
+        run: python -m pip install --extra-index-url https://download.pytorch.org/whl/cpu -r ml/requirements-experiments.txt
+      - name: Download the pinned encoder (revision + SHA-256 checked against ml/encoders.lock.json)
+        run: python ml/scripts/download_encoder.py
+      - name: Verify the committed split matches the dataset
+        run: python ml/scripts/make_split.py --check
+      - name: SetFit feasibility gate
+        if: ${{ inputs.run_setfit_pilot }}
+        run: python ml/scripts/setfit_pilot.py
+      - name: Run all candidates, select, calibrate, choose thresholds, export
+        run: python ml/scripts/run_experiments.py
       - name: Upload artifacts and reports for review
         uses: actions/upload-artifact@v4
         with:
           name: ml-training-${{ github.run_id }}
           path: |
-            ml/artifacts/
-            ml/reports/
+            ml/artifacts/v3/
+            !ml/artifacts/v3/encoders/
+            ml/reports/v3/
           retention-days: 30

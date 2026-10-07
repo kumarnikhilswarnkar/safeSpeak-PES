@@ -6,7 +6,7 @@ import pytest
 
 from app.services.keyword_features import keyword_category, keyword_priority
 from app.services.tat_monitor import TatMonitor
-from app.services.triage_service import load_triage_model
+from app.services.triage_service import load_triage_model, review_reasons
 from tests.workflow_fixtures import CONCERNS, actions, submit, world  # noqa: F401
 
 AUTOMATION = "/api/v1/system/automation"
@@ -209,18 +209,29 @@ def test_real_model_returns_calibrated_confidence_and_evidence(settings):
     model = load_triage_model(settings)
     result = model.predict("The projector in the classroom is broken and the wifi is not working.")
 
-    assert model.calibrated
-    assert abs(sum(result.probabilities["category"].values()) - 1) < 0.01
-    terms = result.explanation["category_terms"]
-    assert terms and all(t["weight"] > 0 for t in terms)
-    assert any("projector" in t["term"] or "wifi" in t["term"] for t in terms)
+    for task in ("category", "priority"):
+        assert abs(sum(result.probabilities[task].values()) - 1) < 0.01
+        evidence = result.explanation[f"{task}_model"]
+        assert evidence["model"] == model.tasks[task].name
+        assert evidence["calibration"] in ("raw", "temperature", "sigmoid")
+        if evidence["kind"] == "linear-text":
+            # Linear models: words that pushed the score towards the predicted class.
+            assert all(t["weight"] > 0 for t in evidence["terms"])
+        else:
+            # Embedding models: only similar training complaints (no word weights).
+            assert len(evidence["similar_training"]) == 3
+    if result.explanation["category_model"]["kind"] == "linear-text":
+        # Words or keyword-list hits (hybrid model: "kw:<category>") supporting the prediction.
+        terms = [t["term"] for t in result.explanation["category_terms"]]
+        assert f"kw:{result.category}" in terms or any(w in " ".join(terms) for w in ("projector", "wifi", "working"))
     assert result.explanation["keyword_baseline"]["category"] == "Infrastructure and facilities"
 
 
 def test_vague_complaint_goes_to_human_review_with_real_model(settings):
     model = load_triage_model(settings)
     result = model.predict("There is some issue, please check.")
-    assert result.confidence < model.recommended_threshold
+    reasons = review_reasons(result, model.recommended_threshold, settings, model.recommended_priority_threshold)
+    assert reasons, "a vague complaint must not be handled automatically"
 
 
 def test_keyword_baseline_rules():
@@ -233,9 +244,15 @@ def test_keyword_baseline_rules():
 
 def test_research_report_is_served_with_live_settings(client, world):
     body = client.get("/api/v1/research/evaluation", headers=world.h("viewer")).json()
-    assert "keyword_baseline" in body["test"]["category"]
-    assert body["selected"]["category"]["model"] in body["test"]["category"]
-    assert body["live"]["threshold"] == 0.5  # the test settings' configured threshold
+    assert body["version"] == "v3"
+    for task in ("category", "priority"):
+        t = body["tasks"][task]
+        models = {r["model"] for r in t["comparison"]}
+        assert {"majority_baseline", "keyword_baseline"} <= models
+        assert t["selection"]["selected"] in models
+        assert 0 < t["thresholds"]["threshold"] <= 1
+    assert body["live"]["threshold"] == 0.5  # the test settings' configured category threshold
+    assert body["live"]["threshold_source"] == "CONFIG"
     assert client.get("/api/v1/research/evaluation").status_code == 401
 
 

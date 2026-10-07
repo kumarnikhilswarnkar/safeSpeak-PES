@@ -180,7 +180,7 @@ for other roles' areas. These guards only control what is displayed; the API enf
 ```
 POST /api/v1/concerns  (authenticated, submit_complaint permission; body: description only)
   1. complaint code SSP-YYYY-NNNNNN from the id_counters table (UPDATE ... RETURNING, per IST year)
-  2. AI triage: category + priority + calibrated confidence + evidence (local hybrid model, ml/artifacts/v2)
+  2. AI triage: category + priority + calibrated confidence + evidence (local models listed in ml/artifacts/v3/deployed.json)
   3. review check: needs human review if category or priority confidence < threshold,
      or AI priority is High/Critical (REVIEW_HIGH_SEVERITY)
   4. routing: first level of the escalation chain with an active authority (never the complainant)
@@ -236,7 +236,22 @@ method and results: `docs/ml_evaluation.md`.
 - The model files are loaded only if their SHA-256 matches `metadata.json`.
 - `simulate_breach` exists only when `DEMO_MODE=true`, which is refused in production.
 
-## Friday release: AI v2, automation and insights
+## Phase 2: ML pipeline v3 (current model)
+
+- `ml/safespeak_ml/` + `ml/scripts/run_experiments.py`: candidates 0–9 per task, 5 × 5 grouped CV on 480
+  development records, 120-record holdout reported once, pre-declared selection rule, per-task calibration
+  and thresholds. Details and results: `ml/README.md`, `docs/ml_evaluation.md`.
+- Deployed (`ml/artifacts/v3/deployed.json`): category = hybrid (words + chars + keyword counts + LR),
+  threshold 0.57, raw probabilities; priority = words + chars + LR, threshold 0.63, per-class sigmoid
+  calibration. The disclosed deployment constraint (no PyTorch in the backend) excluded the
+  unconstrained category winner (MiniLM + LR). SetFit was not evaluated (failed its 10-minute gate).
+- The backend (`triage_service.DeployedTriageModel`) verifies every file checksum, refuses missing or
+  altered files, and records `<category model>+<priority model>` / `v3` with every prediction. The
+  priority threshold and its source are stored in `ai_predictions.explanation`; no schema change.
+- Settings: `MODEL_DIR` (default `ml/artifacts/v3`), `REPORTS_DIR`, `CONFIDENCE_THRESHOLD`,
+  `PRIORITY_CONFIDENCE_THRESHOLD`.
+
+## Friday release: AI v2, automation and insights (legacy model; superseded by v3)
 
 ### Local AI model (v2)
 

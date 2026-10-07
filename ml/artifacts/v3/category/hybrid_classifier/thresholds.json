@@ -1,0 +1,18 @@
+{
+  "task": "category",
+  "threshold": 0.57,
+  "rule": "lowest threshold with automatic-decision accuracy >= 80% and automatic rate >= 10% (development out-of-fold, calibrated)",
+  "target_automatic_accuracy": 0.8,
+  "min_automatic_rate": 0.1,
+  "met": true,
+  "at_threshold_development": {
+    "threshold": 0.57,
+    "automatic": 1369,
+    "human_review": 1031,
+    "automatic_rate": 0.5704,
+    "correct_automatic": 1097,
+    "incorrect_automatic": 272,
+    "automatic_accuracy": 0.8013
+  },
+  "calibration_method": "raw"
+}

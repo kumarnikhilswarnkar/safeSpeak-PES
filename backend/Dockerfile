@@ -13,12 +13,13 @@ RUN /opt/venv/bin/pip install -r /tmp/requirements.txt
 
 # ---- runtime stage ----
 FROM python:3.13-slim AS runtime
-# Which versioned model artifact to ship (ml/artifacts/<MODEL_VERSION>).
-ARG MODEL_VERSION=v2
+# Which versioned model artifact to ship (ml/artifacts/<MODEL_VERSION>; v3 = Phase-2 pipeline).
+ARG MODEL_VERSION=v3
 ENV PATH=/opt/venv/bin:$PATH \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    MODEL_DIR=/app/ml/artifacts/${MODEL_VERSION}
+    MODEL_DIR=/app/ml/artifacts/${MODEL_VERSION} \
+    REPORTS_DIR=/app/ml/reports/${MODEL_VERSION}
 
 RUN groupadd --system --gid 10001 app \
  && useradd --system --uid 10001 --gid app --home-dir /app --no-create-home --shell /usr/sbin/nologin app
@@ -30,7 +31,8 @@ COPY backend/alembic ./alembic
 COPY backend/app ./app
 COPY backend/seed ./seed
 COPY --chmod=0755 backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-# Read-only model artifact (inference only; the backend never trains) and its evaluation report.
+# Read-only model artifact (inference only; the backend never trains) and its evaluation reports.
+# deployed.json lists the two models the backend loads; their SHA-256 checksums are verified at startup.
 COPY ml/artifacts/${MODEL_VERSION} /app/ml/artifacts/${MODEL_VERSION}
 COPY ml/reports /app/ml/reports
 

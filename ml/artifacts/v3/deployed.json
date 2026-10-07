@@ -1,0 +1,181 @@
+{
+  "name": "safespeak-triage",
+  "version": "v3",
+  "created": "2026-10-07T07:16:55+00:00",
+  "dataset": {
+    "version": "safespeak-600-v1",
+    "sha256": "66483ef778c0af0ae2e4e7656478e651f6d9f76eea1d54822be3c1f607fbd776"
+  },
+  "note": "The backend loads exactly these two models; nothing else.",
+  "category": {
+    "model": "hybrid_classifier",
+    "kind": "linear-text",
+    "path": "category/hybrid_classifier",
+    "threshold": 0.57,
+    "calibration": "raw",
+    "files": {
+      "calibration.json": "245061985d3f95b38f8cf8bf25a0a9f361608549a95c4c8ef88677ffc4ed04ea",
+      "classifier.joblib": "26d3775303b1929ff341737fcff8fee7eb0ac41e707903a8a43f1bfb0e46e80d",
+      "dataset_info.json": "3865e04791b597f75bb4f8febc5ae0571d4e2dbdad355e584bdcdcb25fe9f9ff",
+      "metadata.json": "a31cd1e42a501ebe894b4722db0d127d0a229ce1c351022ecd2a3fc030211286",
+      "reproducibility.json": "7af92b5e6c9f4e576562478c16e2e3a09f7663c56edf264ae9407f5409b05618",
+      "selection.json": "773043a8b18b6837b29eb93c216cbedfd8f4146710876bb53c220a3b8e288b47",
+      "thresholds.json": "f623c0be7d02b80c8ae19309c43b2ae97e580b2fec2299280899bc21b23161d4",
+      "vectorizer.joblib": "5fd292f1316f60681ea3efccf60653b2bc9cebaf1e5407bd9bdfcca2b79b18e3"
+    }
+  },
+  "priority": {
+    "model": "word_char_logistic",
+    "kind": "linear-text",
+    "path": "priority/word_char_logistic",
+    "threshold": 0.63,
+    "calibration": "sigmoid",
+    "files": {
+      "calibration.json": "41a0ea34aa839e4cceb747b5c66199f79efc97319fbbf181beadaa4b4eee9714",
+      "classifier.joblib": "1e00f4bab048d9a1d92ac955ce333ee05217267be4bf5d44b5def023afe72a61",
+      "dataset_info.json": "3865e04791b597f75bb4f8febc5ae0571d4e2dbdad355e584bdcdcb25fe9f9ff",
+      "metadata.json": "ce8f959ff1fc7057696b1e67352f08b1f06412564f9f9b48ad37af8f3a44ed5f",
+      "reproducibility.json": "7af92b5e6c9f4e576562478c16e2e3a09f7663c56edf264ae9407f5409b05618",
+      "selection.json": "b0c9f408277d4d70904ca3cc6a42fbf7a72df1ab7500ead983c67bb4833b2181",
+      "thresholds.json": "353e649176c22661313e1ac86ce703c87139955aa215465018685c7b0f826463",
+      "vectorizer.joblib": "e33874f0777dab4cb68717625ef7cd315a2b7aeeba93b269fba543c3b9dc4462"
+    }
+  },
+  "probe_predictions": [
+    {
+      "text": "The projector in classroom 052 has not been working for two weeks.",
+      "category": {
+        "label": "Infrastructure and facilities",
+        "confidence": 0.930087,
+        "probabilities": {
+          "Hostel": 0.026897,
+          "Exam": 0.001794,
+          "Academic / Department": 0.02957,
+          "Infrastructure and facilities": 0.930087,
+          "Safety and welfare": 0.006201,
+          "Administrative / Fees": 0.002628,
+          "Library / Transport": 0.000545,
+          "Other": 0.002278
+        }
+      },
+      "priority": {
+        "label": "Medium",
+        "confidence": 0.848484,
+        "probabilities": {
+          "Low": 0.020767,
+          "Medium": 0.848484,
+          "High": 0.128944,
+          "Critical": 0.001806
+        }
+      }
+    },
+    {
+      "text": "There is some issue, please check.",
+      "category": {
+        "label": "Other",
+        "confidence": 0.376089,
+        "probabilities": {
+          "Hostel": 0.070809,
+          "Exam": 0.06371,
+          "Academic / Department": 0.075517,
+          "Infrastructure and facilities": 0.076916,
+          "Safety and welfare": 0.106269,
+          "Administrative / Fees": 0.182492,
+          "Library / Transport": 0.048199,
+          "Other": 0.376089
+        }
+      },
+      "priority": {
+        "label": "Medium",
+        "confidence": 0.696389,
+        "probabilities": {
+          "Low": 0.093726,
+          "Medium": 0.696389,
+          "High": 0.03423,
+          "Critical": 0.175655
+        }
+      }
+    },
+    {
+      "text": "Fee receipt for the second semester has not been issued even after payment two weeks ago.",
+      "category": {
+        "label": "Administrative / Fees",
+        "confidence": 0.992826,
+        "probabilities": {
+          "Hostel": 5e-05,
+          "Exam": 0.000164,
+          "Academic / Department": 0.000116,
+          "Infrastructure and facilities": 0.00017,
+          "Safety and welfare": 0.004926,
+          "Administrative / Fees": 0.992826,
+          "Library / Transport": 8e-06,
+          "Other": 0.00174
+        }
+      },
+      "priority": {
+        "label": "Medium",
+        "confidence": 0.725973,
+        "probabilities": {
+          "Low": 0.071318,
+          "Medium": 0.725973,
+          "High": 0.202579,
+          "Critical": 0.000129
+        }
+      }
+    },
+    {
+      "text": "Someone has been following me near the hostel gate at night and I feel unsafe.",
+      "category": {
+        "label": "Safety and welfare",
+        "confidence": 0.914812,
+        "probabilities": {
+          "Hostel": 0.040946,
+          "Exam": 0.001229,
+          "Academic / Department": 0.002032,
+          "Infrastructure and facilities": 0.005701,
+          "Safety and welfare": 0.914812,
+          "Administrative / Fees": 0.026656,
+          "Library / Transport": 0.001474,
+          "Other": 0.007149
+        }
+      },
+      "priority": {
+        "label": "Critical",
+        "confidence": 0.459272,
+        "probabilities": {
+          "Low": 0.004504,
+          "Medium": 0.217638,
+          "High": 0.318586,
+          "Critical": 0.459272
+        }
+      }
+    },
+    {
+      "text": "The library closes too early during exam week.",
+      "category": {
+        "label": "Library / Transport",
+        "confidence": 0.738416,
+        "probabilities": {
+          "Hostel": 0.013095,
+          "Exam": 0.126049,
+          "Academic / Department": 0.036333,
+          "Infrastructure and facilities": 0.018954,
+          "Safety and welfare": 0.021786,
+          "Administrative / Fees": 0.020151,
+          "Library / Transport": 0.738416,
+          "Other": 0.025216
+        }
+      },
+      "priority": {
+        "label": "Low",
+        "confidence": 0.821757,
+        "probabilities": {
+          "Low": 0.821757,
+          "Medium": 0.096063,
+          "High": 0.081256,
+          "Critical": 0.000925
+        }
+      }
+    }
+  ]
+}

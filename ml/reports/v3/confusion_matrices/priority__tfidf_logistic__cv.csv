@@ -1,0 +1,5 @@
+true \ predicted,Low,Medium,High,Critical
+Low,431,116,66,2
+Medium,113,617,157,13
+High,34,290,193,53
+Critical,7,51,65,192

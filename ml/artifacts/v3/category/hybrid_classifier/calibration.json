@@ -1,0 +1,45 @@
+{
+  "task": "category",
+  "classes": [
+    "Hostel",
+    "Exam",
+    "Academic / Department",
+    "Infrastructure and facilities",
+    "Safety and welfare",
+    "Administrative / Fees",
+    "Library / Transport",
+    "Other"
+  ],
+  "method": "raw",
+  "params": {},
+  "comparison_cross_fitted": {
+    "raw": {
+      "nll": 1.0527,
+      "ece": 0.0458,
+      "brier": 0.4879,
+      "mean_confidence": 0.6405,
+      "accuracy": 0.6471
+    },
+    "temperature": {
+      "nll": 1.0584,
+      "ece": 0.0468,
+      "brier": 0.4899,
+      "mean_confidence": 0.6535,
+      "accuracy": 0.6471
+    },
+    "sigmoid": {
+      "nll": 1.1498,
+      "ece": 0.0927,
+      "brier": 0.5229,
+      "mean_confidence": 0.5563,
+      "accuracy": 0.6429
+    }
+  },
+  "improves_over_raw": false,
+  "rule": "lowest cross-fitted log loss on development out-of-fold scores; raw kept if nothing improves",
+  "formula": {
+    "raw": "softmax(s)",
+    "temperature": "softmax(s / T)",
+    "sigmoid": "p_k = sigmoid(a_k*s_k + b_k); p /= sum(p)"
+  }
+}

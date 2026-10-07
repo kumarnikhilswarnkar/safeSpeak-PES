@@ -1,0 +1,54 @@
+{
+  "task": "priority",
+  "classes": [
+    "Low",
+    "Medium",
+    "High",
+    "Critical"
+  ],
+  "method": "sigmoid",
+  "params": {
+    "a": [
+      4.900547,
+      3.28981,
+      1.684225,
+      4.995903
+    ],
+    "b": [
+      -1.853078,
+      -1.826415,
+      -1.399438,
+      -1.22716
+    ]
+  },
+  "comparison_cross_fitted": {
+    "raw": {
+      "nll": 1.0373,
+      "ece": 0.1804,
+      "brier": 0.5645,
+      "mean_confidence": 0.4267,
+      "accuracy": 0.6071
+    },
+    "temperature": {
+      "nll": 0.9104,
+      "ece": 0.0277,
+      "brier": 0.5076,
+      "mean_confidence": 0.6267,
+      "accuracy": 0.6071
+    },
+    "sigmoid": {
+      "nll": 0.8894,
+      "ece": 0.051,
+      "brier": 0.5016,
+      "mean_confidence": 0.5946,
+      "accuracy": 0.6146
+    }
+  },
+  "improves_over_raw": true,
+  "rule": "lowest cross-fitted log loss on development out-of-fold scores; raw kept if nothing improves",
+  "formula": {
+    "raw": "softmax(s)",
+    "temperature": "softmax(s / T)",
+    "sigmoid": "p_k = sigmoid(a_k*s_k + b_k); p /= sum(p)"
+  }
+}

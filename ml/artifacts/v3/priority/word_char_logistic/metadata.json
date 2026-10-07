@@ -1,0 +1,94 @@
+{
+  "model_name": "word_char_logistic",
+  "model_title": "Word + character n-grams + Logistic Regression",
+  "model_version": "v3",
+  "kind": "linear-text",
+  "task": "priority",
+  "classes": [
+    "Low",
+    "Medium",
+    "High",
+    "Critical"
+  ],
+  "dataset": {
+    "version": "safespeak-600-v1",
+    "sha256": "66483ef778c0af0ae2e4e7656478e651f6d9f76eea1d54822be3c1f607fbd776",
+    "trained_on": "development partition (480 records, 160 groups)"
+  },
+  "description": {
+    "number": 5,
+    "name": "word_char_logistic",
+    "title": "Word + character n-grams + Logistic Regression",
+    "kind": "linear-text",
+    "features": "FeatureUnion(transformer_list=[('word',\n                                TfidfVectorizer(ngram_range=(1, 2),\n                                                strip_accents='unicode',\n                                                sublinear_tf=True)),\n                               ('char',\n                                TfidfVectorizer(analyzer='char_wb', min_df=2,\n                                                ngram_range=(2, 5),\n                                                strip_accents='unicode',\n                                                sublinear_tf=True))])",
+    "algorithm": "LogisticRegression",
+    "hyperparameters": {
+      "C": 1.0,
+      "class_weight": "balanced",
+      "max_iter": 5000
+    },
+    "seed": 42
+  },
+  "seed": 42,
+  "cv": {
+    "design": "5 x 5-fold StratifiedGroupKFold",
+    "accuracy": {
+      "mean": 0.6071,
+      "sd": 0.0559
+    },
+    "macro_precision": {
+      "mean": 0.6342,
+      "sd": 0.0522
+    },
+    "macro_recall": {
+      "mean": 0.5924,
+      "sd": 0.0511
+    },
+    "macro_f1": {
+      "mean": 0.5884,
+      "sd": 0.052
+    },
+    "weighted_f1": {
+      "mean": 0.6016,
+      "sd": 0.0603
+    }
+  },
+  "holdout": {
+    "n": 120,
+    "accuracy": 0.575,
+    "macro_precision": 0.6063,
+    "macro_recall": 0.5934,
+    "macro_f1": 0.587,
+    "weighted_f1": 0.5784
+  },
+  "threshold": 0.63,
+  "calibration": {
+    "method": "sigmoid",
+    "params": {
+      "a": [
+        4.900547,
+        3.28981,
+        1.684225,
+        4.995903
+      ],
+      "b": [
+        -1.853078,
+        -1.826415,
+        -1.399438,
+        -1.22716
+      ]
+    }
+  },
+  "keyword_lexicon_sha256": null,
+  "training_date": "2026-10-07T07:16:55+00:00",
+  "explanation": "top contributing words (feature value x class weight)",
+  "artifact_files": {
+    "calibration.json": "41a0ea34aa839e4cceb747b5c66199f79efc97319fbbf181beadaa4b4eee9714",
+    "classifier.joblib": "1e00f4bab048d9a1d92ac955ce333ee05217267be4bf5d44b5def023afe72a61",
+    "dataset_info.json": "3865e04791b597f75bb4f8febc5ae0571d4e2dbdad355e584bdcdcb25fe9f9ff",
+    "reproducibility.json": "7af92b5e6c9f4e576562478c16e2e3a09f7663c56edf264ae9407f5409b05618",
+    "selection.json": "b0c9f408277d4d70904ca3cc6a42fbf7a72df1ab7500ead983c67bb4833b2181",
+    "thresholds.json": "353e649176c22661313e1ac86ce703c87139955aa215465018685c7b0f826463",
+    "vectorizer.joblib": "e33874f0777dab4cb68717625ef7cd315a2b7aeeba93b269fba543c3b9dc4462"
+  }
+}

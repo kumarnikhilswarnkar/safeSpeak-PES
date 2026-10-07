@@ -29,5 +29,8 @@ frontend
 scripts
 ml/data
 ml/.venv-ml
+ml/.cache
+# Encoder weights are only needed if an embedding model is deployed (see ml/README.md).
+ml/artifacts/v3/encoders
 backend/tests
 backend/scripts

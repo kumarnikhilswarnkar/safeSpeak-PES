@@ -13,7 +13,7 @@ x-backend-build: &backend-build
   context: .
   dockerfile: backend/Dockerfile
   args:
-    MODEL_VERSION: ${MODEL_VERSION:-v2}
+    MODEL_VERSION: ${MODEL_VERSION:-v3}
 
 # Settings shared by every container that runs backend code.
 x-backend-env: &backend-env

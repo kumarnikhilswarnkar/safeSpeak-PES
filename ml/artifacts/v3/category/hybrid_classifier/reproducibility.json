@@ -1,0 +1,42 @@
+{
+  "command": "ml/.venv-ml/Scripts/python ml/scripts/run_experiments.py",
+  "prerequisites": [
+    "ml/scripts/download_encoder.py",
+    "ml/scripts/make_split.py",
+    "ml/scripts/setfit_pilot.py"
+  ],
+  "git_commit_at_run": "e8bf932180fac380ae68f55b0770abcc14f18a03",
+  "python": "3.13.7",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "packages": {
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "joblib": "1.6.0",
+    "torch": "2.14.1",
+    "sentence-transformers": "6.1.0",
+    "setfit": "1.2.0",
+    "transformers": "5.18.0"
+  },
+  "seeds": {
+    "global": 42,
+    "cv": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ]
+  },
+  "checksums": {
+    "dataset": "66483ef778c0af0ae2e4e7656478e651f6d9f76eea1d54822be3c1f607fbd776",
+    "split": "c6c6819fc81033e49f0bd0dd4f75b1a3427d3c65730c6b322e8b46817374f7a4",
+    "keyword_lexicon": "361a2c35abbf7823528cb5f38f687560aec61b29b49c3ad4b9cac7368ff8d944",
+    "encoder_lock": "746575b2a5b9feac689822d9e61fb85e05e8d48d23f173af04fbc1e1dc15afcb"
+  },
+  "encoder": {
+    "repo": "sentence-transformers/all-MiniLM-L6-v2",
+    "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
+  },
+  "run_seconds": 230.8
+}

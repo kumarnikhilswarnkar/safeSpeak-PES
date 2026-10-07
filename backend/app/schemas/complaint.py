@@ -67,11 +67,15 @@ class AIRecommendationOut(BaseModel):
     priority: str
     priority_confidence: float
     confidence: float
-    threshold: float
+    threshold: float  # category threshold
     threshold_source: str
+    # Priority threshold, selected independently (None for predictions made before v3).
+    priority_threshold: float | None = None
+    priority_threshold_source: str | None = None
     flagged_for_review: bool
     flag_reasons: list[str]
-    # Contributing words per task and the keyword-baseline labels (model v2+).
+    # Evidence per task (contributing words, or similar training complaints for an
+    # embedding model) and the frozen keyword-baseline labels.
     explanation: dict[str, Any] | None = None
 
 
@@ -194,6 +198,8 @@ def complaint_out(c: Complaint, settings: Settings) -> ComplaintOut:
             confidence=p.confidence,
             threshold=p.threshold,
             threshold_source=p.threshold_source,
+            priority_threshold=(p.explanation or {}).get("priority_threshold"),
+            priority_threshold_source=(p.explanation or {}).get("priority_threshold_source"),
             flagged_for_review=p.flagged_for_review,
             flag_reasons=p.flag_reasons or [],
             explanation=p.explanation,

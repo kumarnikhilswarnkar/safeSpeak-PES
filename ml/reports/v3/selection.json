@@ -1,0 +1,218 @@
+{
+  "category": {
+    "selected": "hybrid_classifier",
+    "pool": [
+      "tfidf_logistic",
+      "tfidf_svm",
+      "word_ngram_logistic",
+      "word_char_logistic",
+      "word_char_svm",
+      "hybrid_classifier"
+    ],
+    "rule": [
+      "1. highest mean grouped-CV macro-F1",
+      "2. within one SD of the best -> prefer lower SD (more stable)",
+      "3. SDs within 0.005 are equal -> prefer the simpler model",
+      "4. compare with the frozen keyword baseline",
+      "5. holdout never used for selection"
+    ],
+    "trace": {
+      "best_mean": {
+        "model": "hybrid_classifier",
+        "mean": 0.6361,
+        "sd": 0.0633
+      },
+      "tied_within_one_sd": {
+        "hybrid_classifier": {
+          "mean": 0.6361,
+          "sd": 0.0633
+        }
+      },
+      "most_stable": [
+        "hybrid_classifier"
+      ],
+      "simplest_among_stable": "hybrid_classifier"
+    },
+    "winner_cv_macro_f1": {
+      "mean": 0.6361,
+      "sd": 0.0633
+    },
+    "keyword_baseline_cv_macro_f1": {
+      "mean": 0.6159,
+      "sd": 0.0691
+    },
+    "beats_keyword_baseline": true,
+    "margin_over_keyword_in_sd": 0.32,
+    "deployment_constraint": {
+      "rule": "the backend must run without PyTorch: only linear-text candidates (2-7) are deployable",
+      "added": "2026-10-07, after the first full run (decision recorded and disclosed; not pre-declared)",
+      "reason": "the unconstrained winner (MiniLM+LR) would add PyTorch to the backend: about +530 MB image, +370 MB RAM and +30 s startup measured on the development laptop"
+    },
+    "unconstrained": {
+      "selected": "minilm_logistic",
+      "pool": [
+        "tfidf_logistic",
+        "tfidf_svm",
+        "word_ngram_logistic",
+        "word_char_logistic",
+        "word_char_svm",
+        "hybrid_classifier",
+        "minilm_logistic"
+      ],
+      "trace": {
+        "best_mean": {
+          "model": "hybrid_classifier",
+          "mean": 0.6361,
+          "sd": 0.0633
+        },
+        "tied_within_one_sd": {
+          "hybrid_classifier": {
+            "mean": 0.6361,
+            "sd": 0.0633
+          },
+          "minilm_logistic": {
+            "mean": 0.605,
+            "sd": 0.054
+          }
+        },
+        "most_stable": [
+          "minilm_logistic"
+        ],
+        "simplest_among_stable": "minilm_logistic"
+      },
+      "winner_cv_macro_f1": {
+        "mean": 0.605,
+        "sd": 0.054
+      },
+      "beats_keyword_baseline": false,
+      "margin_over_keyword_in_sd": -0.2
+    },
+    "constraint_changed_selection": true
+  },
+  "priority": {
+    "selected": "word_char_logistic",
+    "pool": [
+      "tfidf_logistic",
+      "tfidf_svm",
+      "word_ngram_logistic",
+      "word_char_logistic",
+      "word_char_svm",
+      "hybrid_classifier"
+    ],
+    "rule": [
+      "1. highest mean grouped-CV macro-F1",
+      "2. within one SD of the best -> prefer lower SD (more stable)",
+      "3. SDs within 0.005 are equal -> prefer the simpler model",
+      "4. compare with the frozen keyword baseline",
+      "5. holdout never used for selection"
+    ],
+    "trace": {
+      "best_mean": {
+        "model": "word_char_svm",
+        "mean": 0.5938,
+        "sd": 0.0611
+      },
+      "tied_within_one_sd": {
+        "word_char_svm": {
+          "mean": 0.5938,
+          "sd": 0.0611
+        },
+        "word_char_logistic": {
+          "mean": 0.5884,
+          "sd": 0.052
+        },
+        "tfidf_logistic": {
+          "mean": 0.5854,
+          "sd": 0.0721
+        },
+        "tfidf_svm": {
+          "mean": 0.577,
+          "sd": 0.0711
+        },
+        "word_ngram_logistic": {
+          "mean": 0.5732,
+          "sd": 0.0704
+        },
+        "hybrid_classifier": {
+          "mean": 0.5545,
+          "sd": 0.0675
+        }
+      },
+      "most_stable": [
+        "word_char_logistic"
+      ],
+      "simplest_among_stable": "word_char_logistic"
+    },
+    "winner_cv_macro_f1": {
+      "mean": 0.5884,
+      "sd": 0.052
+    },
+    "keyword_baseline_cv_macro_f1": {
+      "mean": 0.2456,
+      "sd": 0.0714
+    },
+    "beats_keyword_baseline": true,
+    "margin_over_keyword_in_sd": 6.59,
+    "deployment_constraint": {
+      "rule": "the backend must run without PyTorch: only linear-text candidates (2-7) are deployable",
+      "added": "2026-10-07, after the first full run (decision recorded and disclosed; not pre-declared)",
+      "reason": "the unconstrained winner (MiniLM+LR) would add PyTorch to the backend: about +530 MB image, +370 MB RAM and +30 s startup measured on the development laptop"
+    },
+    "unconstrained": {
+      "selected": "word_char_logistic",
+      "pool": [
+        "tfidf_logistic",
+        "tfidf_svm",
+        "word_ngram_logistic",
+        "word_char_logistic",
+        "word_char_svm",
+        "hybrid_classifier",
+        "minilm_logistic"
+      ],
+      "trace": {
+        "best_mean": {
+          "model": "word_char_svm",
+          "mean": 0.5938,
+          "sd": 0.0611
+        },
+        "tied_within_one_sd": {
+          "word_char_svm": {
+            "mean": 0.5938,
+            "sd": 0.0611
+          },
+          "word_char_logistic": {
+            "mean": 0.5884,
+            "sd": 0.052
+          },
+          "tfidf_logistic": {
+            "mean": 0.5854,
+            "sd": 0.0721
+          },
+          "tfidf_svm": {
+            "mean": 0.577,
+            "sd": 0.0711
+          },
+          "word_ngram_logistic": {
+            "mean": 0.5732,
+            "sd": 0.0704
+          },
+          "hybrid_classifier": {
+            "mean": 0.5545,
+            "sd": 0.0675
+          }
+        },
+        "most_stable": [
+          "word_char_logistic"
+        ],
+        "simplest_among_stable": "word_char_logistic"
+      },
+      "winner_cv_macro_f1": {
+        "mean": 0.5884,
+        "sd": 0.052
+      },
+      "beats_keyword_baseline": true,
+      "margin_over_keyword_in_sd": 6.59
+    },
+    "constraint_changed_selection": false
+  }
+}

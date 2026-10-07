@@ -64,3 +64,9 @@ backups/
 .local/
 # CI test reports (JUnit XML)
 /reports/
+
+# ML experiment environment, downloaded encoder weights and caches (reproducible from scripts)
+ml/.venv-ml/
+ml/artifacts/v3/encoders/
+ml/artifacts/v3/**/setfit_body/
+ml/.cache/

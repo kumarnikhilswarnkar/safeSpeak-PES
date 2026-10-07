@@ -33,7 +33,12 @@ from app.services.errors import (
     PermissionDeniedError,
 )
 from app.services.id_service import next_complaint_code
-from app.services.triage_service import TriageModel, effective_threshold, review_reasons
+from app.services.triage_service import (
+    TriageModel,
+    effective_priority_threshold,
+    effective_threshold,
+    review_reasons,
+)
 
 HUMAN_DECISIONS = (DecisionSource.HUMAN_ACCEPTED, DecisionSource.HUMAN_OVERRIDDEN)
 
@@ -187,7 +192,8 @@ def submit(db: Session, settings: Settings, model: TriageModel, user: User, desc
 
     result = model.predict(description)
     threshold, threshold_source = effective_threshold(settings, model)
-    reasons = review_reasons(result, threshold, settings)
+    priority_threshold, priority_threshold_source = effective_priority_threshold(settings, model)
+    reasons = review_reasons(result, threshold, settings, priority_threshold)
     flagged = bool(reasons)
     now = utcnow()
 
@@ -234,7 +240,14 @@ def submit(db: Session, settings: Settings, model: TriageModel, user: User, desc
             flagged_for_review=flagged,
             flag_reasons=reasons,
             probabilities=result.probabilities,
-            explanation=result.explanation or None,
+            # threshold/threshold_source columns hold the category threshold; the
+            # independently selected priority threshold is kept with the explanation
+            # (no schema change).
+            explanation={
+                **(result.explanation or {}),
+                "priority_threshold": priority_threshold,
+                "priority_threshold_source": priority_threshold_source,
+            },
         )
     )
 
@@ -252,12 +265,14 @@ def submit(db: Session, settings: Settings, model: TriageModel, user: User, desc
             "priority_confidence": result.priority_confidence,
             "confidence": result.confidence,
             "threshold": threshold,
+            "priority_threshold": priority_threshold,
         },
     )
     if flagged:
         audit_service.record(
             db, c, "sent_to_human_review", None,
-            new={"reasons": reasons, "threshold": threshold, "threshold_source": threshold_source},
+            new={"reasons": reasons, "threshold": threshold, "threshold_source": threshold_source,
+                 "priority_threshold": priority_threshold, "priority_threshold_source": priority_threshold_source},
         )
     if skipped:
         audit_service.record(

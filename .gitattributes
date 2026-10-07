@@ -4,3 +4,11 @@ Dockerfile text eol=lf
 *.conf text eol=lf
 *.sql text eol=lf
 *.yml text eol=lf
+
+# Generated ML files whose SHA-256 checksums are recorded and verified (deployed.json,
+# metadata.json, reproducibility.json, the backend loader and CI). Store and check them
+# out byte-for-byte on every platform: no line-ending conversion.
+ml/artifacts/v3/** -text
+ml/reports/v3/** -text
+ml/data/splits/** -text
+ml/encoders.lock.json -text

@@ -48,15 +48,17 @@ class Settings(BaseSettings):
 
     display_timezone: str = "Asia/Kolkata"
 
-    # AI triage. MODEL_DIR holds category.joblib, priority.joblib and metadata.json
-    # produced by ml/train_triage.py.
-    model_dir: Path = REPO_DIR / "ml" / "artifacts" / "v2"
-    # Model evaluation report shown on the research page (ml/train_triage_v2.py).
-    evaluation_report: Path = REPO_DIR / "ml" / "reports" / "evaluation.json"
-    # Complaints whose category or priority confidence is below this go to human
-    # review. Leave unset to use the threshold selected on validation data and
-    # recorded in the model's metadata.json.
+    # AI triage. MODEL_DIR holds deployed.json and the two selected models written by
+    # ml/scripts/run_experiments.py (v1/v2 are legacy and no longer loadable).
+    model_dir: Path = REPO_DIR / "ml" / "artifacts" / "v3"
+    # Evaluation reports shown on the research page (ml/scripts/run_experiments.py).
+    reports_dir: Path = REPO_DIR / "ml" / "reports" / "v3"
+    # Complaints whose category confidence is below CONFIDENCE_THRESHOLD, or whose
+    # priority confidence is below PRIORITY_CONFIDENCE_THRESHOLD, go to human review.
+    # Leave unset to use the thresholds selected (per task) on grouped cross-validation
+    # and recorded with the deployed model.
     confidence_threshold: float | None = Field(default=None, gt=0, le=1)
+    priority_confidence_threshold: float | None = Field(default=None, gt=0, le=1)
     # High and Critical AI priorities always require human review.
     review_high_severity: bool = True
     # Share of the TAT left at which a deadline is shown as "due soon".

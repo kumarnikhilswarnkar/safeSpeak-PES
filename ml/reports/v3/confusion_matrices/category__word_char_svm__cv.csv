@@ -1,0 +1,9 @@
+true \ predicted,Hostel,Exam,Academic / Department,Infrastructure and facilities,Safety and welfare,Administrative / Fees,Library / Transport,Other
+Hostel,193,4,8,77,20,5,4,4
+Exam,7,248,28,4,5,7,0,1
+Academic / Department,17,83,147,12,19,4,10,8
+Infrastructure and facilities,85,11,17,105,17,7,12,46
+Safety and welfare,29,12,29,19,143,6,21,41
+Administrative / Fees,4,19,10,15,2,213,4,18
+Library / Transport,14,28,19,7,6,1,196,29
+Other,25,8,13,36,61,41,25,91

@@ -104,18 +104,20 @@ The final demo walkthrough is in [docs/FRIDAY_DEMO.md](docs/FRIDAY_DEMO.md).
 
 ## AI triage model
 
-The categorisation model is a local scikit-learn model that runs inside the backend; no external AI
-service is used. `ml/train_triage_v2.py` compares a keyword baseline with several ML models
-(5-fold grouped cross-validation, one held-out test set), calibrates the confidences, selects the
-review threshold and writes `ml/artifacts/v2/` plus the report `ml/reports/evaluation.json`
-(shown on the AI evaluation page). From the repository root:
+Two local scikit-learn models (category and priority) run inside the backend; no external AI service
+is used. The v3 pipeline (`ml/scripts/run_experiments.py`, see [ml/README.md](ml/README.md)) compares
+10 candidates per task with 5 × 5 grouped cross-validation, applies a pre-declared selection rule,
+calibrates confidences, chooses a separate review threshold per task, reports a 120-record holdout
+once, and writes `ml/artifacts/v3/` (with `deployed.json`, the only file the backend reads) and
+`ml/reports/v3/` (shown on the AI evaluation page). Results: [docs/ml_evaluation.md](docs/ml_evaluation.md).
 
 ```bash
-backend/.venv/Scripts/python ml/train_triage_v2.py
+ml/.venv-ml/Scripts/python ml/scripts/run_experiments.py
+backend/.venv/Scripts/python ml/scripts/predict_demo.py
 ```
 
 The dataset is synthetic/controlled (AI-generated complaints and paraphrases), not real student data.
-`ml/train_triage.py` reproduces the earlier v1 model (Review-II).
+The v1/v2 scripts and artifacts are kept as legacy ([ml/legacy/README.md](ml/legacy/README.md)).
 
 ## Frontend setup
 

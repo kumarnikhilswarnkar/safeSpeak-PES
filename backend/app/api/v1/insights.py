@@ -1,7 +1,7 @@
 """Dashboards, notifications, model evaluation and automation status.
 
-All numbers come from the live database or from the evaluation report written by
-ml/train_triage_v2.py; nothing here is hard-coded."""
+All numbers come from the live database or from the evaluation reports written by
+ml/scripts/run_experiments.py (ml/reports/v3); nothing here is hard-coded."""
 import json
 from datetime import datetime
 from typing import Annotated, Any
@@ -16,11 +16,15 @@ from app.core.permissions import Permission, has_permission
 from app.models import EscalationRule, TATRule, User
 from app.services import analytics_service
 from app.services.tat_monitor import MonitorRun
-from app.services.triage_service import effective_threshold
+from app.services.triage_service import effective_priority_threshold, effective_threshold
 
 router = APIRouter(tags=["insights"])
 
 SystemOperator = Annotated[User, Depends(require_permission(Permission.MANAGE_RULES_AND_SETTINGS))]
+
+
+REPORT_FILES = ("model_comparison", "selection", "calibration", "thresholds", "holdout_results",
+                "dataset_info", "reproducibility")
 
 
 def _model_info(request: Request, settings) -> tuple[float | None, str | None, str | None]:
@@ -29,6 +33,37 @@ def _model_info(request: Request, settings) -> tuple[float | None, str | None, s
         return None, None, None
     threshold, source = effective_threshold(settings, model)
     return threshold, source, f"{model.name}:{model.version}"
+
+
+def _research_payload(reports: dict[str, Any]) -> dict[str, Any]:
+    """The parts of the v3 reports the research page shows (the full files stay in ml/reports/v3)."""
+    tasks = {}
+    for task, rows in reports["model_comparison"]["tasks"].items():
+        selected = reports["selection"][task]["selected"]
+        holdout = reports["holdout_results"][task]
+        th = reports["thresholds"][task]
+        tasks[task] = {
+            "comparison": rows,
+            "selection": reports["selection"][task],
+            "calibration": reports["calibration"][task]["models"][selected],
+            "holdout_calibration": holdout["selected_model_details"]["calibration"],
+            "thresholds": {k: th[k] for k in ("threshold", "rule", "met", "at_threshold", "report_table",
+                                              "holdout_table", "calibration_method", "curve")},
+            "selected_holdout": holdout["models"][selected],
+            "keyword_holdout": holdout["models"].get("keyword_baseline"),
+        }
+    return {
+        "version": "v3",
+        "dataset": reports["dataset_info"],
+        "setfit_pilot": reports["model_comparison"].get("setfit_pilot"),
+        "protocol": {
+            "cv": "5 folds x 5 repeats, StratifiedGroupKFold (paraphrase groups never split)",
+            "holdout": "40 whole groups (120 records), used once after all decisions",
+            "selection_rule": reports["selection"]["category"]["rule"],
+        },
+        "reproducibility": {k: reports["reproducibility"].get(k) for k in ("command", "packages", "seeds", "checksums")},
+        "tasks": tasks,
+    }
 
 
 @router.get("/analytics/overview")
@@ -44,19 +79,26 @@ def my_notifications(user: CurrentUser, db: DbSession) -> list[dict[str, Any]]:
 
 @router.get("/research/evaluation")
 def research_evaluation(request: Request, _user: CurrentUser, settings: AppSettings) -> dict[str, Any]:
-    """The offline evaluation report (synthetic dataset) plus the model and
-    threshold the API is using right now."""
+    """The offline v3 evaluation (synthetic dataset) plus the model and thresholds
+    the API is using right now."""
     try:
-        report = json.loads(settings.evaluation_report.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Evaluation report not found; run ml/train_triage_v2.py") from None
+        reports = {name: json.loads((settings.reports_dir / f"{name}.json").read_text(encoding="utf-8"))
+                   for name in REPORT_FILES}
+        payload = _research_payload(reports)
+    except (OSError, ValueError, KeyError):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Evaluation reports not found; run ml/scripts/run_experiments.py") from None
     threshold, source, model = _model_info(request, settings)
+    live_model = request.app.state.triage_model
+    priority_threshold, priority_source = (
+        effective_priority_threshold(settings, live_model) if live_model is not None else (None, None))
     return {
-        **report,
+        **payload,
         "live": {
             "model": model,
             "threshold": threshold,
             "threshold_source": source,
+            "priority_threshold": priority_threshold,
+            "priority_threshold_source": priority_source,
             "review_high_severity": settings.review_high_severity,
         },
     }

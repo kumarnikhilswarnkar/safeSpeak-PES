@@ -1,0 +1,22 @@
+# Separate ML experiment environment (NOT the backend, NOT the Docker app stack).
+#   python -m venv ml/.venv-ml
+#   ml/.venv-ml/Scripts/python -m pip install -r ml/requirements-experiments.txt   (Windows)
+#   ml/.venv-ml/bin/python -m pip install -r ml/requirements-experiments.txt       (Linux/macOS)
+# Classical-model packages are pinned to the SAME versions as backend/requirements.txt,
+# so artifacts trained here load identically in the backend.
+scikit-learn==1.9.1
+numpy==2.5.3
+scipy==1.18.1
+joblib==1.6.0
+# Candidates 8 (MiniLM embeddings + LR) and 9 (SetFit). CPU only; no external API.
+torch==2.14.1
+sentence-transformers==6.1.0
+setfit==1.2.0
+huggingface_hub==1.33.0
+# Exact versions resolved and used for the v3 experiments (reproducibility)
+transformers==5.18.0
+tokenizers==0.23.2
+safetensors==0.8.0
+datasets==5.1.0
+accelerate==1.15.0
+evaluate==0.4.6

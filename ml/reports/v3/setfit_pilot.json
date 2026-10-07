@@ -1,0 +1,35 @@
+{
+  "candidate": "setfit_classifier",
+  "settings": {
+    "num_iterations": 20,
+    "num_epochs": 1,
+    "batch_size": 16
+  },
+  "max_seconds_per_fit": 600,
+  "fold": "development repeat 0 / fold 0 (category)",
+  "machine": {
+    "platform": "Windows-11-10.0.26300-SP0",
+    "processor": "Intel64 Family 6 Model 126 Stepping 5, GenuineIntel"
+  },
+  "gate_c_standard_cv_code": true,
+  "fit_1": {
+    "finished": false,
+    "wall_seconds": 720.8,
+    "stopped_at_limit": true,
+    "progress": {
+      "steps_done": 212,
+      "steps_total": 953,
+      "projected_fit_seconds": 3240
+    },
+    "log_tail": [
+      " 22%|##2       | 210/953 [11:18<2:23:50, 11.62s/it]",
+      " 22%|##2       | 211/953 [11:28<2:17:25, 11.11s/it]",
+      " 22%|##2       | 212/953 [11:33<1:53:08,  9.16s/it]"
+    ]
+  },
+  "gate_a_time": false,
+  "gate_b_reproducible": "not checked (gate a failed)",
+  "passed": false,
+  "status": "NOT EVALUATED",
+  "error": "one fit exceeded the 600 s limit on this machine (212/953 training steps after 720.8 s; projected 3240 s per fit)"
+}

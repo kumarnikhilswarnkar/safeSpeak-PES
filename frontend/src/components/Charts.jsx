@@ -147,8 +147,8 @@ export function GroupedBars({ data, series, height = 280, percent = false, label
   )
 }
 
-/** Coverage / selective-accuracy curve against the threshold, with the chosen threshold marked. */
-export function ThresholdCurve({ data, threshold, height = 260 }) {
+/** One task's threshold curve (v3): accuracy of automatic decisions and share handled automatically. */
+export function SelectiveCurve({ data, threshold, target = 0.8, height = 240 }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <LineChart data={data} margin={{ left: -8, right: 12, top: 8, bottom: 0 }}>
@@ -157,10 +157,12 @@ export function ThresholdCurve({ data, threshold, height = 260 }) {
         <YAxis domain={[0, 1]} tick={axis} tickFormatter={(v) => `${Math.round(v * 100)}%`} />
         <Tooltip {...tooltipStyle} formatter={(v) => (v == null ? '—' : `${(v * 100).toFixed(1)}%`)} labelFormatter={(v) => `Threshold ${v}`} />
         <Legend iconType="plainline" wrapperStyle={{ fontSize: 12 }} />
-        <ReferenceLine x={threshold} stroke={COLORS.accent} strokeDasharray="4 3" label={{ value: `chosen ${threshold}`, fontSize: 11, fill: COLORS.accent, position: 'insideTopRight' }} />
-        <Line dataKey="category_selective_accuracy" name="Category correct (auto cases)" stroke={COLORS.brand} dot={false} strokeWidth={2} />
-        <Line dataKey="priority_selective_accuracy" name="Priority correct (auto cases)" stroke={COLORS.violet} dot={false} strokeWidth={2} />
-        <Line dataKey="joint_coverage" name="Share handled automatically" stroke={COLORS.green} dot={false} strokeWidth={2} strokeDasharray="5 3" />
+        <ReferenceLine y={target} stroke={COLORS.slate} strokeDasharray="2 3" />
+        {threshold <= 0.95 && (
+          <ReferenceLine x={threshold} stroke={COLORS.accent} strokeDasharray="4 3" label={{ value: `chosen ${threshold}`, fontSize: 11, fill: COLORS.accent, position: 'insideTopRight' }} />
+        )}
+        <Line dataKey="automatic_accuracy" name="Correct among automatic" stroke={COLORS.brand} dot={false} strokeWidth={2} />
+        <Line dataKey="automatic_rate" name="Share handled automatically" stroke={COLORS.green} dot={false} strokeWidth={2} strokeDasharray="5 3" />
       </LineChart>
     </ResponsiveContainer>
   )

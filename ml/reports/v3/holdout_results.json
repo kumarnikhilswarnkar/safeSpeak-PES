@@ -1,0 +1,2214 @@
+{
+  "category": {
+    "note": "Reported once after selection; never used to choose a model, threshold or calibration.",
+    "models": {
+      "majority_baseline": {
+        "n": 120,
+        "accuracy": 0.125,
+        "macro_precision": 0.0156,
+        "macro_recall": 0.125,
+        "macro_f1": 0.0278,
+        "weighted_f1": 0.0278,
+        "per_class": {
+          "Hostel": {
+            "precision": 0.125,
+            "recall": 1.0,
+            "f1": 0.2222,
+            "support": 15
+          },
+          "Exam": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 15
+          },
+          "Academic / Department": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 15
+          },
+          "Infrastructure and facilities": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 15
+          },
+          "Safety and welfare": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 15
+          },
+          "Administrative / Fees": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 15
+          },
+          "Library / Transport": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 12
+          },
+          "Other": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 18
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Hostel",
+            "Exam",
+            "Academic / Department",
+            "Infrastructure and facilities",
+            "Safety and welfare",
+            "Administrative / Fees",
+            "Library / Transport",
+            "Other"
+          ],
+          "matrix": [
+            [
+              15,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              15,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              15,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              15,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              15,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              15,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              12,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              18,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ]
+        }
+      },
+      "keyword_baseline": {
+        "n": 120,
+        "accuracy": 0.5917,
+        "macro_precision": 0.5537,
+        "macro_recall": 0.5979,
+        "macro_f1": 0.5605,
+        "weighted_f1": 0.5518,
+        "per_class": {
+          "Hostel": {
+            "precision": 0.5,
+            "recall": 0.6,
+            "f1": 0.5455,
+            "support": 15
+          },
+          "Exam": {
+            "precision": 0.6087,
+            "recall": 0.9333,
+            "f1": 0.7368,
+            "support": 15
+          },
+          "Academic / Department": {
+            "precision": 0.5,
+            "recall": 0.4,
+            "f1": 0.4444,
+            "support": 15
+          },
+          "Infrastructure and facilities": {
+            "precision": 0.7778,
+            "recall": 0.4667,
+            "f1": 0.5833,
+            "support": 15
+          },
+          "Safety and welfare": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 15
+          },
+          "Administrative / Fees": {
+            "precision": 0.8571,
+            "recall": 0.8,
+            "f1": 0.8276,
+            "support": 15
+          },
+          "Library / Transport": {
+            "precision": 0.7857,
+            "recall": 0.9167,
+            "f1": 0.8462,
+            "support": 12
+          },
+          "Other": {
+            "precision": 0.4,
+            "recall": 0.6667,
+            "f1": 0.5,
+            "support": 18
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Hostel",
+            "Exam",
+            "Academic / Department",
+            "Infrastructure and facilities",
+            "Safety and welfare",
+            "Administrative / Fees",
+            "Library / Transport",
+            "Other"
+          ],
+          "matrix": [
+            [
+              9,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              6
+            ],
+            [
+              0,
+              14,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              9,
+              6,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              3,
+              0,
+              3,
+              7,
+              0,
+              0,
+              0,
+              2
+            ],
+            [
+              6,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              9
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              12,
+              3,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              11,
+              0
+            ],
+            [
+              0,
+              0,
+              3,
+              2,
+              0,
+              1,
+              0,
+              12
+            ]
+          ]
+        }
+      },
+      "tfidf_logistic": {
+        "n": 120,
+        "accuracy": 0.5417,
+        "macro_precision": 0.5323,
+        "macro_recall": 0.5458,
+        "macro_f1": 0.5243,
+        "weighted_f1": 0.5251,
+        "per_class": {
+          "Hostel": {
+            "precision": 0.5,
+            "recall": 0.6667,
+            "f1": 0.5714,
+            "support": 15
+          },
+          "Exam": {
+            "precision": 0.6667,
+            "recall": 0.6667,
+            "f1": 0.6667,
+            "support": 15
+          },
+          "Academic / Department": {
+            "precision": 0.4667,
+            "recall": 0.4667,
+            "f1": 0.4667,
+            "support": 15
+          },
+          "Infrastructure and facilities": {
+            "precision": 0.3333,
+            "recall": 0.1333,
+            "f1": 0.1905,
+            "support": 15
+          },
+          "Safety and welfare": {
+            "precision": 0.5833,
+            "recall": 0.4667,
+            "f1": 0.5185,
+            "support": 15
+          },
+          "Administrative / Fees": {
+            "precision": 0.5455,
+            "recall": 0.8,
+            "f1": 0.6486,
+            "support": 15
+          },
+          "Library / Transport": {
+            "precision": 0.4706,
+            "recall": 0.6667,
+            "f1": 0.5517,
+            "support": 12
+          },
+          "Other": {
+            "precision": 0.6923,
+            "recall": 0.5,
+            "f1": 0.5806,
+            "support": 18
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Hostel",
+            "Exam",
+            "Academic / Department",
+            "Infrastructure and facilities",
+            "Safety and welfare",
+            "Administrative / Fees",
+            "Library / Transport",
+            "Other"
+          ],
+          "matrix": [
+            [
+              10,
+              0,
+              0,
+              4,
+              1,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              10,
+              3,
+              0,
+              0,
+              2,
+              0,
+              0
+            ],
+            [
+              0,
+              2,
+              7,
+              0,
+              3,
+              3,
+              0,
+              0
+            ],
+            [
+              8,
+              0,
+              2,
+              2,
+              0,
+              0,
+              3,
+              0
+            ],
+            [
+              1,
+              0,
+              2,
+              0,
+              7,
+              1,
+              1,
+              3
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              12,
+              3,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              8,
+              1
+            ],
+            [
+              1,
+              3,
+              1,
+              0,
+              0,
+              2,
+              2,
+              9
+            ]
+          ]
+        }
+      },
+      "tfidf_svm": {
+        "n": 120,
+        "accuracy": 0.575,
+        "macro_precision": 0.5755,
+        "macro_recall": 0.5813,
+        "macro_f1": 0.5527,
+        "weighted_f1": 0.5517,
+        "per_class": {
+          "Hostel": {
+            "precision": 0.5417,
+            "recall": 0.8667,
+            "f1": 0.6667,
+            "support": 15
+          },
+          "Exam": {
+            "precision": 0.6875,
+            "recall": 0.7333,
+            "f1": 0.7097,
+            "support": 15
+          },
+          "Academic / Department": {
+            "precision": 0.4667,
+            "recall": 0.4667,
+            "f1": 0.4667,
+            "support": 15
+          },
+          "Infrastructure and facilities": {
+            "precision": 0.5,
+            "recall": 0.1333,
+            "f1": 0.2105,
+            "support": 15
+          },
+          "Safety and welfare": {
+            "precision": 0.6364,
+            "recall": 0.4667,
+            "f1": 0.5385,
+            "support": 15
+          },
+          "Administrative / Fees": {
+            "precision": 0.55,
+            "recall": 0.7333,
+            "f1": 0.6286,
+            "support": 15
+          },
+          "Library / Transport": {
+            "precision": 0.5294,
+            "recall": 0.75,
+            "f1": 0.6207,
+            "support": 12
+          },
+          "Other": {
+            "precision": 0.6923,
+            "recall": 0.5,
+            "f1": 0.5806,
+            "support": 18
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Hostel",
+            "Exam",
+            "Academic / Department",
+            "Infrastructure and facilities",
+            "Safety and welfare",
+            "Administrative / Fees",
+            "Library / Transport",
+            "Other"
+          ],
+          "matrix": [
+            [
+              13,
+              0,
+              0,
+              2,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              11,
+              3,
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              2,
+              7,
+              0,
+              3,
+              3,
+              0,
+              0
+            ],
+            [
+              8,
+              0,
+              2,
+              2,
+              0,
+              0,
+              3,
+              0
+            ],
+            [
+              2,
+              0,
+              3,
+              0,
+              7,
+              1,
+              0,
+              2
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              11,
+              3,
+              1
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              9,
+              1
+            ],
+            [
+              1,
+              3,
+              0,
+              0,
+              1,
+              2,
+              2,
+              9
+            ]
+          ]
+        }
+      },
+      "word_ngram_logistic": {
+        "n": 120,
+        "accuracy": 0.4917,
+        "macro_precision": 0.4769,
+        "macro_recall": 0.5007,
+        "macro_f1": 0.473,
+        "weighted_f1": 0.4694,
+        "per_class": {
+          "Hostel": {
+            "precision": 0.5,
+            "recall": 0.5333,
+            "f1": 0.5161,
+            "support": 15
+          },
+          "Exam": {
+            "precision": 0.7059,
+            "recall": 0.8,
+            "f1": 0.75,
+            "support": 15
+          },
+          "Academic / Department": {
+            "precision": 0.4667,
+            "recall": 0.4667,
+            "f1": 0.4667,
+            "support": 15
+          },
+          "Infrastructure and facilities": {
+            "precision": 0.2857,
+            "recall": 0.1333,
+            "f1": 0.1818,
+            "support": 15
+          },
+          "Safety and welfare": {
+            "precision": 0.3889,
+            "recall": 0.4667,
+            "f1": 0.4242,
+            "support": 15
+          },
+          "Administrative / Fees": {
+            "precision": 0.6,
+            "recall": 0.8,
+            "f1": 0.6857,
+            "support": 15
+          },
+          "Library / Transport": {
+            "precision": 0.3684,
+            "recall": 0.5833,
+            "f1": 0.4516,
+            "support": 12
+          },
+          "Other": {
+            "precision": 0.5,
+            "recall": 0.2222,
+            "f1": 0.3077,
+            "support": 18
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Hostel",
+            "Exam",
+            "Academic / Department",
+            "Infrastructure and facilities",
+            "Safety and welfare",
+            "Administrative / Fees",
+            "Library / Transport",
+            "Other"
+          ],
+          "matrix": [
+            [
+              8,
+              0,
+              0,
+              3,
+              3,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              12,
+              1,
+              0,
+              0,
+              2,
+              0,
+              0
+            ],
+            [
+              0,
+              3,
+              7,
+              0,
+              3,
+              2,
+              0,
+              0
+            ],
+            [
+              7,
+              0,
+              2,
+              2,
+              1,
+              0,
+              3,
+              0
+            ],
+            [
+              1,
+              0,
+              1,
+              2,
+              7,
+              0,
+              1,
+              3
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              12,
+              3,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0,
+              1,
+              2,
+              7,
+              1
+            ],
+            [
+              0,
+              2,
+              3,
+              0,
+              3,
+              2,
+              4,
+              4
+            ]
+          ]
+        }
+      },
+      "word_char_logistic": {
+        "n": 120,
+        "accuracy": 0.575,
+        "macro_precision": 0.5841,
+        "macro_recall": 0.5785,
+        "macro_f1": 0.5707,
+        "weighted_f1": 0.5684,
+        "per_class": {
+          "Hostel": {
+            "precision": 0.7143,
+            "recall": 0.6667,
+            "f1": 0.6897,
+            "support": 15
+          },
+          "Exam": {
+            "precision": 0.7143,
+            "recall": 0.6667,
+            "f1": 0.6897,
+            "support": 15
+          },
+          "Academic / Department": {
+            "precision": 0.4444,
+            "recall": 0.5333,
+            "f1": 0.4848,
+            "support": 15
+          },
+          "Infrastructure and facilities": {
+            "precision": 0.625,
+            "recall": 0.3333,
+            "f1": 0.4348,
+            "support": 15
+          },
+          "Safety and welfare": {
+            "precision": 0.5714,
+            "recall": 0.5333,
+            "f1": 0.5517,
+            "support": 15
+          },
+          "Administrative / Fees": {
+            "precision": 0.5652,
+            "recall": 0.8667,
+            "f1": 0.6842,
+            "support": 15
+          },
+          "Library / Transport": {
+            "precision": 0.5385,
+            "recall": 0.5833,
+            "f1": 0.56,
+            "support": 12
+          },
+          "Other": {
+            "precision": 0.5,
+            "recall": 0.4444,
+            "f1": 0.4706,
+            "support": 18
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Hostel",
+            "Exam",
+            "Academic / Department",
+            "Infrastructure and facilities",
+            "Safety and welfare",
+            "Administrative / Fees",
+            "Library / Transport",
+            "Other"
+          ],
+          "matrix": [
+            [
+              10,
+              0,
+              0,
+              2,
+              3,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              10,
+              3,
+              0,
+              0,
+              2,
+              0,
+              0
+            ],
+            [
+              0,
+              2,
+              8,
+              0,
+              2,
+              3,
+              0,
+              0
+            ],
+            [
+              4,
+              0,
+              3,
+              5,
+              0,
+              0,
+              3,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0,
+              8,
+              0,
+              2,
+              4
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              13,
+              0,
+              2
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              3,
+              7,
+              2
+            ],
+            [
+              0,
+              2,
+              3,
+              1,
+              1,
+              2,
+              1,
+              8
+            ]
+          ]
+        }
+      },
+      "word_char_svm": {
+        "n": 120,
+        "accuracy": 0.55,
+        "macro_precision": 0.5562,
+        "macro_recall": 0.5576,
+        "macro_f1": 0.5397,
+        "weighted_f1": 0.5375,
+        "per_class": {
+          "Hostel": {
+            "precision": 0.625,
+            "recall": 0.6667,
+            "f1": 0.6452,
+            "support": 15
+          },
+          "Exam": {
+            "precision": 0.6429,
+            "recall": 0.6,
+            "f1": 0.6207,
+            "support": 15
+          },
+          "Academic / Department": {
+            "precision": 0.3684,
+            "recall": 0.4667,
+            "f1": 0.4118,
+            "support": 15
+          },
+          "Infrastructure and facilities": {
+            "precision": 0.5,
+            "recall": 0.2,
+            "f1": 0.2857,
+            "support": 15
+          },
+          "Safety and welfare": {
+            "precision": 0.5714,
+            "recall": 0.5333,
+            "f1": 0.5517,
+            "support": 15
+          },
+          "Administrative / Fees": {
+            "precision": 0.5455,
+            "recall": 0.8,
+            "f1": 0.6486,
+            "support": 15
+          },
+          "Library / Transport": {
+            "precision": 0.5294,
+            "recall": 0.75,
+            "f1": 0.6207,
+            "support": 12
+          },
+          "Other": {
+            "precision": 0.6667,
+            "recall": 0.4444,
+            "f1": 0.5333,
+            "support": 18
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Hostel",
+            "Exam",
+            "Academic / Department",
+            "Infrastructure and facilities",
+            "Safety and welfare",
+            "Administrative / Fees",
+            "Library / Transport",
+            "Other"
+          ],
+          "matrix": [
+            [
+              10,
+              0,
+              0,
+              2,
+              3,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              9,
+              4,
+              0,
+              0,
+              2,
+              0,
+              0
+            ],
+            [
+              0,
+              3,
+              7,
+              0,
+              2,
+              3,
+              0,
+              0
+            ],
+            [
+              6,
+              0,
+              3,
+              3,
+              0,
+              0,
+              3,
+              0
+            ],
+            [
+              0,
+              0,
+              2,
+              0,
+              8,
+              0,
+              2,
+              3
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              12,
+              2,
+              1
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              3,
+              9,
+              0
+            ],
+            [
+              0,
+              2,
+              3,
+              1,
+              1,
+              2,
+              1,
+              8
+            ]
+          ]
+        }
+      },
+      "hybrid_classifier": {
+        "n": 120,
+        "accuracy": 0.65,
+        "macro_precision": 0.6887,
+        "macro_recall": 0.6507,
+        "macro_f1": 0.6476,
+        "weighted_f1": 0.6429,
+        "per_class": {
+          "Hostel": {
+            "precision": 0.5714,
+            "recall": 0.5333,
+            "f1": 0.5517,
+            "support": 15
+          },
+          "Exam": {
+            "precision": 0.7,
+            "recall": 0.9333,
+            "f1": 0.8,
+            "support": 15
+          },
+          "Academic / Department": {
+            "precision": 0.6667,
+            "recall": 0.4,
+            "f1": 0.5,
+            "support": 15
+          },
+          "Infrastructure and facilities": {
+            "precision": 0.8333,
+            "recall": 0.6667,
+            "f1": 0.7407,
+            "support": 15
+          },
+          "Safety and welfare": {
+            "precision": 0.8571,
+            "recall": 0.4,
+            "f1": 0.5455,
+            "support": 15
+          },
+          "Administrative / Fees": {
+            "precision": 0.6667,
+            "recall": 0.8,
+            "f1": 0.7273,
+            "support": 15
+          },
+          "Library / Transport": {
+            "precision": 0.75,
+            "recall": 0.75,
+            "f1": 0.75,
+            "support": 12
+          },
+          "Other": {
+            "precision": 0.4643,
+            "recall": 0.7222,
+            "f1": 0.5652,
+            "support": 18
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Hostel",
+            "Exam",
+            "Academic / Department",
+            "Infrastructure and facilities",
+            "Safety and welfare",
+            "Administrative / Fees",
+            "Library / Transport",
+            "Other"
+          ],
+          "matrix": [
+            [
+              8,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              6
+            ],
+            [
+              0,
+              14,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              6,
+              6,
+              0,
+              0,
+              3,
+              0,
+              0
+            ],
+            [
+              3,
+              0,
+              0,
+              10,
+              0,
+              0,
+              0,
+              2
+            ],
+            [
+              3,
+              0,
+              0,
+              0,
+              6,
+              0,
+              0,
+              6
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              12,
+              3,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              3,
+              9,
+              0
+            ],
+            [
+              0,
+              0,
+              3,
+              2,
+              0,
+              0,
+              0,
+              13
+            ]
+          ]
+        }
+      },
+      "minilm_logistic": {
+        "n": 120,
+        "accuracy": 0.5917,
+        "macro_precision": 0.6051,
+        "macro_recall": 0.6035,
+        "macro_f1": 0.5935,
+        "weighted_f1": 0.5883,
+        "per_class": {
+          "Hostel": {
+            "precision": 0.5,
+            "recall": 0.4667,
+            "f1": 0.4828,
+            "support": 15
+          },
+          "Exam": {
+            "precision": 0.6154,
+            "recall": 0.5333,
+            "f1": 0.5714,
+            "support": 15
+          },
+          "Academic / Department": {
+            "precision": 0.5625,
+            "recall": 0.6,
+            "f1": 0.5806,
+            "support": 15
+          },
+          "Infrastructure and facilities": {
+            "precision": 0.5625,
+            "recall": 0.6,
+            "f1": 0.5806,
+            "support": 15
+          },
+          "Safety and welfare": {
+            "precision": 0.75,
+            "recall": 0.6,
+            "f1": 0.6667,
+            "support": 15
+          },
+          "Administrative / Fees": {
+            "precision": 0.4762,
+            "recall": 0.6667,
+            "f1": 0.5556,
+            "support": 15
+          },
+          "Library / Transport": {
+            "precision": 0.6471,
+            "recall": 0.9167,
+            "f1": 0.7586,
+            "support": 12
+          },
+          "Other": {
+            "precision": 0.7273,
+            "recall": 0.4444,
+            "f1": 0.5517,
+            "support": 18
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Hostel",
+            "Exam",
+            "Academic / Department",
+            "Infrastructure and facilities",
+            "Safety and welfare",
+            "Administrative / Fees",
+            "Library / Transport",
+            "Other"
+          ],
+          "matrix": [
+            [
+              7,
+              0,
+              0,
+              5,
+              3,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              8,
+              4,
+              0,
+              0,
+              3,
+              0,
+              0
+            ],
+            [
+              0,
+              4,
+              9,
+              0,
+              0,
+              2,
+              0,
+              0
+            ],
+            [
+              4,
+              0,
+              1,
+              9,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              3,
+              0,
+              0,
+              0,
+              9,
+              0,
+              0,
+              3
+            ],
+            [
+              0,
+              0,
+              2,
+              0,
+              0,
+              10,
+              3,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              11,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              2,
+              0,
+              5,
+              2,
+              8
+            ]
+          ]
+        }
+      }
+    },
+    "selected_model_details": {
+      "calibration": {
+        "raw": {
+          "nll": 1.0479,
+          "ece": 0.1175,
+          "brier": 0.4883,
+          "mean_confidence": 0.6594,
+          "accuracy": 0.65
+        }
+      },
+      "threshold_table": [
+        {
+          "threshold": 0.2,
+          "automatic": 120,
+          "human_review": 0,
+          "automatic_rate": 1.0,
+          "correct_automatic": 78,
+          "incorrect_automatic": 42,
+          "automatic_accuracy": 0.65
+        },
+        {
+          "threshold": 0.3,
+          "automatic": 111,
+          "human_review": 9,
+          "automatic_rate": 0.925,
+          "correct_automatic": 77,
+          "incorrect_automatic": 34,
+          "automatic_accuracy": 0.6937
+        },
+        {
+          "threshold": 0.4,
+          "automatic": 103,
+          "human_review": 17,
+          "automatic_rate": 0.8583,
+          "correct_automatic": 72,
+          "incorrect_automatic": 31,
+          "automatic_accuracy": 0.699
+        },
+        {
+          "threshold": 0.5,
+          "automatic": 84,
+          "human_review": 36,
+          "automatic_rate": 0.7,
+          "correct_automatic": 63,
+          "incorrect_automatic": 21,
+          "automatic_accuracy": 0.75
+        },
+        {
+          "threshold": 0.57,
+          "automatic": 72,
+          "human_review": 48,
+          "automatic_rate": 0.6,
+          "correct_automatic": 58,
+          "incorrect_automatic": 14,
+          "automatic_accuracy": 0.8056
+        },
+        {
+          "threshold": 0.6,
+          "automatic": 65,
+          "human_review": 55,
+          "automatic_rate": 0.5417,
+          "correct_automatic": 54,
+          "incorrect_automatic": 11,
+          "automatic_accuracy": 0.8308
+        },
+        {
+          "threshold": 0.7,
+          "automatic": 55,
+          "human_review": 65,
+          "automatic_rate": 0.4583,
+          "correct_automatic": 45,
+          "incorrect_automatic": 10,
+          "automatic_accuracy": 0.8182
+        },
+        {
+          "threshold": 0.8,
+          "automatic": 40,
+          "human_review": 80,
+          "automatic_rate": 0.3333,
+          "correct_automatic": 33,
+          "incorrect_automatic": 7,
+          "automatic_accuracy": 0.825
+        },
+        {
+          "threshold": 0.9,
+          "automatic": 30,
+          "human_review": 90,
+          "automatic_rate": 0.25,
+          "correct_automatic": 24,
+          "incorrect_automatic": 6,
+          "automatic_accuracy": 0.8
+        }
+      ]
+    }
+  },
+  "priority": {
+    "note": "Reported once after selection; never used to choose a model, threshold or calibration.",
+    "models": {
+      "majority_baseline": {
+        "n": 120,
+        "accuracy": 0.25,
+        "macro_precision": 0.0625,
+        "macro_recall": 0.25,
+        "macro_f1": 0.1,
+        "weighted_f1": 0.1,
+        "per_class": {
+          "Low": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 36
+          },
+          "Medium": {
+            "precision": 0.25,
+            "recall": 1.0,
+            "f1": 0.4,
+            "support": 30
+          },
+          "High": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 33
+          },
+          "Critical": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 21
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Low",
+            "Medium",
+            "High",
+            "Critical"
+          ],
+          "matrix": [
+            [
+              0,
+              36,
+              0,
+              0
+            ],
+            [
+              0,
+              30,
+              0,
+              0
+            ],
+            [
+              0,
+              33,
+              0,
+              0
+            ],
+            [
+              0,
+              21,
+              0,
+              0
+            ]
+          ]
+        },
+        "critical_recall": 0.0,
+        "high_or_critical_recall": 0.0,
+        "serious_cases_missed": 54
+      },
+      "keyword_baseline": {
+        "n": 120,
+        "accuracy": 0.375,
+        "macro_precision": 0.6352,
+        "macro_recall": 0.3565,
+        "macro_f1": 0.3221,
+        "weighted_f1": 0.3459,
+        "per_class": {
+          "Low": {
+            "precision": 0.8462,
+            "recall": 0.3056,
+            "f1": 0.449,
+            "support": 36
+          },
+          "Medium": {
+            "precision": 0.2857,
+            "recall": 0.8,
+            "f1": 0.4211,
+            "support": 30
+          },
+          "High": {
+            "precision": 0.4091,
+            "recall": 0.2727,
+            "f1": 0.3273,
+            "support": 33
+          },
+          "Critical": {
+            "precision": 1.0,
+            "recall": 0.0476,
+            "f1": 0.0909,
+            "support": 21
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Low",
+            "Medium",
+            "High",
+            "Critical"
+          ],
+          "matrix": [
+            [
+              11,
+              25,
+              0,
+              0
+            ],
+            [
+              0,
+              24,
+              6,
+              0
+            ],
+            [
+              2,
+              22,
+              9,
+              0
+            ],
+            [
+              0,
+              13,
+              7,
+              1
+            ]
+          ]
+        },
+        "critical_recall": 0.0476,
+        "high_or_critical_recall": 0.3148,
+        "serious_cases_missed": 37
+      },
+      "tfidf_logistic": {
+        "n": 120,
+        "accuracy": 0.55,
+        "macro_precision": 0.5709,
+        "macro_recall": 0.5684,
+        "macro_f1": 0.5619,
+        "weighted_f1": 0.5535,
+        "per_class": {
+          "Low": {
+            "precision": 0.8621,
+            "recall": 0.6944,
+            "f1": 0.7692,
+            "support": 36
+          },
+          "Medium": {
+            "precision": 0.3415,
+            "recall": 0.4667,
+            "f1": 0.3944,
+            "support": 30
+          },
+          "High": {
+            "precision": 0.4,
+            "recall": 0.303,
+            "f1": 0.3448,
+            "support": 33
+          },
+          "Critical": {
+            "precision": 0.68,
+            "recall": 0.8095,
+            "f1": 0.7391,
+            "support": 21
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Low",
+            "Medium",
+            "High",
+            "Critical"
+          ],
+          "matrix": [
+            [
+              25,
+              10,
+              0,
+              1
+            ],
+            [
+              2,
+              14,
+              13,
+              1
+            ],
+            [
+              1,
+              16,
+              10,
+              6
+            ],
+            [
+              1,
+              1,
+              2,
+              17
+            ]
+          ]
+        },
+        "critical_recall": 0.8095,
+        "high_or_critical_recall": 0.6481,
+        "serious_cases_missed": 19
+      },
+      "tfidf_svm": {
+        "n": 120,
+        "accuracy": 0.5167,
+        "macro_precision": 0.546,
+        "macro_recall": 0.5337,
+        "macro_f1": 0.5296,
+        "weighted_f1": 0.521,
+        "per_class": {
+          "Low": {
+            "precision": 0.8,
+            "recall": 0.6667,
+            "f1": 0.7273,
+            "support": 36
+          },
+          "Medium": {
+            "precision": 0.2889,
+            "recall": 0.4333,
+            "f1": 0.3467,
+            "support": 30
+          },
+          "High": {
+            "precision": 0.4286,
+            "recall": 0.2727,
+            "f1": 0.3333,
+            "support": 33
+          },
+          "Critical": {
+            "precision": 0.6667,
+            "recall": 0.7619,
+            "f1": 0.7111,
+            "support": 21
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Low",
+            "Medium",
+            "High",
+            "Critical"
+          ],
+          "matrix": [
+            [
+              24,
+              11,
+              0,
+              1
+            ],
+            [
+              6,
+              13,
+              10,
+              1
+            ],
+            [
+              0,
+              18,
+              9,
+              6
+            ],
+            [
+              0,
+              3,
+              2,
+              16
+            ]
+          ]
+        },
+        "critical_recall": 0.7619,
+        "high_or_critical_recall": 0.6111,
+        "serious_cases_missed": 21
+      },
+      "word_ngram_logistic": {
+        "n": 120,
+        "accuracy": 0.525,
+        "macro_precision": 0.5608,
+        "macro_recall": 0.5448,
+        "macro_f1": 0.5383,
+        "weighted_f1": 0.5282,
+        "per_class": {
+          "Low": {
+            "precision": 0.8148,
+            "recall": 0.6111,
+            "f1": 0.6984,
+            "support": 36
+          },
+          "Medium": {
+            "precision": 0.3333,
+            "recall": 0.5333,
+            "f1": 0.4103,
+            "support": 30
+          },
+          "High": {
+            "precision": 0.4286,
+            "recall": 0.2727,
+            "f1": 0.3333,
+            "support": 33
+          },
+          "Critical": {
+            "precision": 0.6667,
+            "recall": 0.7619,
+            "f1": 0.7111,
+            "support": 21
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Low",
+            "Medium",
+            "High",
+            "Critical"
+          ],
+          "matrix": [
+            [
+              22,
+              13,
+              0,
+              1
+            ],
+            [
+              2,
+              16,
+              11,
+              1
+            ],
+            [
+              1,
+              17,
+              9,
+              6
+            ],
+            [
+              2,
+              2,
+              1,
+              16
+            ]
+          ]
+        },
+        "critical_recall": 0.7619,
+        "high_or_critical_recall": 0.5926,
+        "serious_cases_missed": 22
+      },
+      "word_char_logistic": {
+        "n": 120,
+        "accuracy": 0.575,
+        "macro_precision": 0.6063,
+        "macro_recall": 0.5934,
+        "macro_f1": 0.587,
+        "weighted_f1": 0.5784,
+        "per_class": {
+          "Low": {
+            "precision": 0.8929,
+            "recall": 0.6944,
+            "f1": 0.7812,
+            "support": 36
+          },
+          "Medium": {
+            "precision": 0.3696,
+            "recall": 0.5667,
+            "f1": 0.4474,
+            "support": 30
+          },
+          "High": {
+            "precision": 0.4545,
+            "recall": 0.303,
+            "f1": 0.3636,
+            "support": 33
+          },
+          "Critical": {
+            "precision": 0.7083,
+            "recall": 0.8095,
+            "f1": 0.7556,
+            "support": 21
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Low",
+            "Medium",
+            "High",
+            "Critical"
+          ],
+          "matrix": [
+            [
+              25,
+              11,
+              0,
+              0
+            ],
+            [
+              2,
+              17,
+              10,
+              1
+            ],
+            [
+              1,
+              16,
+              10,
+              6
+            ],
+            [
+              0,
+              2,
+              2,
+              17
+            ]
+          ]
+        },
+        "critical_recall": 0.8095,
+        "high_or_critical_recall": 0.6481,
+        "serious_cases_missed": 19
+      },
+      "word_char_svm": {
+        "n": 120,
+        "accuracy": 0.575,
+        "macro_precision": 0.6076,
+        "macro_recall": 0.5905,
+        "macro_f1": 0.584,
+        "weighted_f1": 0.5784,
+        "per_class": {
+          "Low": {
+            "precision": 0.8571,
+            "recall": 0.6667,
+            "f1": 0.75,
+            "support": 36
+          },
+          "Medium": {
+            "precision": 0.383,
+            "recall": 0.6,
+            "f1": 0.4675,
+            "support": 30
+          },
+          "High": {
+            "precision": 0.5238,
+            "recall": 0.3333,
+            "f1": 0.4074,
+            "support": 33
+          },
+          "Critical": {
+            "precision": 0.6667,
+            "recall": 0.7619,
+            "f1": 0.7111,
+            "support": 21
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Low",
+            "Medium",
+            "High",
+            "Critical"
+          ],
+          "matrix": [
+            [
+              24,
+              11,
+              0,
+              1
+            ],
+            [
+              3,
+              18,
+              8,
+              1
+            ],
+            [
+              1,
+              15,
+              11,
+              6
+            ],
+            [
+              0,
+              3,
+              2,
+              16
+            ]
+          ]
+        },
+        "critical_recall": 0.7619,
+        "high_or_critical_recall": 0.6481,
+        "serious_cases_missed": 19
+      },
+      "hybrid_classifier": {
+        "n": 120,
+        "accuracy": 0.5417,
+        "macro_precision": 0.5737,
+        "macro_recall": 0.5523,
+        "macro_f1": 0.5509,
+        "weighted_f1": 0.5437,
+        "per_class": {
+          "Low": {
+            "precision": 0.7879,
+            "recall": 0.7222,
+            "f1": 0.7536,
+            "support": 36
+          },
+          "Medium": {
+            "precision": 0.3191,
+            "recall": 0.5,
+            "f1": 0.3896,
+            "support": 30
+          },
+          "High": {
+            "precision": 0.4737,
+            "recall": 0.2727,
+            "f1": 0.3462,
+            "support": 33
+          },
+          "Critical": {
+            "precision": 0.7143,
+            "recall": 0.7143,
+            "f1": 0.7143,
+            "support": 21
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Low",
+            "Medium",
+            "High",
+            "Critical"
+          ],
+          "matrix": [
+            [
+              26,
+              10,
+              0,
+              0
+            ],
+            [
+              5,
+              15,
+              9,
+              1
+            ],
+            [
+              2,
+              17,
+              9,
+              5
+            ],
+            [
+              0,
+              5,
+              1,
+              15
+            ]
+          ]
+        },
+        "critical_recall": 0.7143,
+        "high_or_critical_recall": 0.5556,
+        "serious_cases_missed": 24
+      },
+      "minilm_logistic": {
+        "n": 120,
+        "accuracy": 0.7167,
+        "macro_precision": 0.7082,
+        "macro_recall": 0.7043,
+        "macro_f1": 0.7045,
+        "weighted_f1": 0.712,
+        "per_class": {
+          "Low": {
+            "precision": 0.8293,
+            "recall": 0.9444,
+            "f1": 0.8831,
+            "support": 36
+          },
+          "Medium": {
+            "precision": 0.6,
+            "recall": 0.6,
+            "f1": 0.6,
+            "support": 30
+          },
+          "High": {
+            "precision": 0.6667,
+            "recall": 0.6061,
+            "f1": 0.6349,
+            "support": 33
+          },
+          "Critical": {
+            "precision": 0.7368,
+            "recall": 0.6667,
+            "f1": 0.7,
+            "support": 21
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Low",
+            "Medium",
+            "High",
+            "Critical"
+          ],
+          "matrix": [
+            [
+              34,
+              2,
+              0,
+              0
+            ],
+            [
+              7,
+              18,
+              5,
+              0
+            ],
+            [
+              0,
+              8,
+              20,
+              5
+            ],
+            [
+              0,
+              2,
+              5,
+              14
+            ]
+          ]
+        },
+        "critical_recall": 0.6667,
+        "high_or_critical_recall": 0.8148,
+        "serious_cases_missed": 10
+      }
+    },
+    "selected_model_details": {
+      "calibration": {
+        "raw": {
+          "nll": 1.0323,
+          "ece": 0.1392,
+          "brier": 0.5696,
+          "mean_confidence": 0.4358,
+          "accuracy": 0.575
+        },
+        "sigmoid": {
+          "nll": 0.8828,
+          "ece": 0.0967,
+          "brier": 0.5136,
+          "mean_confidence": 0.6051,
+          "accuracy": 0.5917
+        }
+      },
+      "threshold_table": [
+        {
+          "threshold": 0.2,
+          "automatic": 120,
+          "human_review": 0,
+          "automatic_rate": 1.0,
+          "correct_automatic": 71,
+          "incorrect_automatic": 49,
+          "automatic_accuracy": 0.5917
+        },
+        {
+          "threshold": 0.3,
+          "automatic": 120,
+          "human_review": 0,
+          "automatic_rate": 1.0,
+          "correct_automatic": 71,
+          "incorrect_automatic": 49,
+          "automatic_accuracy": 0.5917
+        },
+        {
+          "threshold": 0.4,
+          "automatic": 112,
+          "human_review": 8,
+          "automatic_rate": 0.9333,
+          "correct_automatic": 67,
+          "incorrect_automatic": 45,
+          "automatic_accuracy": 0.5982
+        },
+        {
+          "threshold": 0.5,
+          "automatic": 91,
+          "human_review": 29,
+          "automatic_rate": 0.7583,
+          "correct_automatic": 59,
+          "incorrect_automatic": 32,
+          "automatic_accuracy": 0.6484
+        },
+        {
+          "threshold": 0.6,
+          "automatic": 64,
+          "human_review": 56,
+          "automatic_rate": 0.5333,
+          "correct_automatic": 45,
+          "incorrect_automatic": 19,
+          "automatic_accuracy": 0.7031
+        },
+        {
+          "threshold": 0.63,
+          "automatic": 57,
+          "human_review": 63,
+          "automatic_rate": 0.475,
+          "correct_automatic": 41,
+          "incorrect_automatic": 16,
+          "automatic_accuracy": 0.7193
+        },
+        {
+          "threshold": 0.7,
+          "automatic": 29,
+          "human_review": 91,
+          "automatic_rate": 0.2417,
+          "correct_automatic": 26,
+          "incorrect_automatic": 3,
+          "automatic_accuracy": 0.8966
+        },
+        {
+          "threshold": 0.8,
+          "automatic": 6,
+          "human_review": 114,
+          "automatic_rate": 0.05,
+          "correct_automatic": 5,
+          "incorrect_automatic": 1,
+          "automatic_accuracy": 0.8333
+        },
+        {
+          "threshold": 0.9,
+          "automatic": 0,
+          "human_review": 120,
+          "automatic_rate": 0.0,
+          "correct_automatic": 0,
+          "incorrect_automatic": 0,
+          "automatic_accuracy": null
+        }
+      ]
+    }
+  }
+}

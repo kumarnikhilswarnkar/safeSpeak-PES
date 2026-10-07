@@ -1,4 +1,7 @@
-"""SafeSpeak triage model v2: model comparison, calibration, threshold analysis
+"""LEGACY (kept for the record; not used by the application). The current pipeline is
+ml/scripts/run_experiments.py -> ml/artifacts/v3. See ml/legacy/README.md.
+
+SafeSpeak triage model v2: model comparison, calibration, threshold analysis
 and final training.
 
 Usage (from the repository root, with the backend virtual environment):

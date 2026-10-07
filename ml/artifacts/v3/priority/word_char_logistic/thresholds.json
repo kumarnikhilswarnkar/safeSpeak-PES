@@ -1,0 +1,18 @@
+{
+  "task": "priority",
+  "threshold": 0.63,
+  "rule": "lowest threshold with automatic-decision accuracy >= 80% and automatic rate >= 10% (development out-of-fold, calibrated)",
+  "target_automatic_accuracy": 0.8,
+  "min_automatic_rate": 0.1,
+  "met": true,
+  "at_threshold_development": {
+    "threshold": 0.63,
+    "automatic": 955,
+    "human_review": 1445,
+    "automatic_rate": 0.3979,
+    "correct_automatic": 771,
+    "incorrect_automatic": 184,
+    "automatic_accuracy": 0.8073
+  },
+  "calibration_method": "sigmoid"
+}

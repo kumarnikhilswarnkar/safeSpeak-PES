@@ -1,0 +1,9 @@
+class,cv_precision,cv_recall,cv_f1,cv_support,holdout_precision,holdout_recall,holdout_f1,holdout_support
+Hostel,0.4527,0.5619,0.5014,315,0.5,0.6667,0.5714,15
+Exam,0.6239,0.73,0.6728,300,0.6667,0.6667,0.6667,15
+Academic / Department,0.4965,0.47,0.4829,300,0.4667,0.4667,0.4667,15
+Infrastructure and facilities,0.4266,0.4167,0.4216,300,0.3333,0.1333,0.1905,15
+Safety and welfare,0.4885,0.4267,0.4555,300,0.5833,0.4667,0.5185,15
+Administrative / Fees,0.6375,0.6912,0.6633,285,0.5455,0.8,0.6486,15
+Library / Transport,0.7132,0.6133,0.6595,300,0.4706,0.6667,0.5517,12
+Other,0.4087,0.3433,0.3732,300,0.6923,0.5,0.5806,18

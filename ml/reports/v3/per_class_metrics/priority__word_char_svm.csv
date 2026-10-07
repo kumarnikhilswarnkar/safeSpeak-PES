@@ -1,0 +1,5 @@
+class,cv_precision,cv_recall,cv_f1,cv_support,holdout_precision,holdout_recall,holdout_f1,holdout_support
+Low,0.76,0.6797,0.7176,615,0.8571,0.6667,0.75,36
+Medium,0.5855,0.7422,0.6546,900,0.383,0.6,0.4675,30
+High,0.4127,0.3316,0.3677,570,0.5238,0.3333,0.4074,33
+Critical,0.749,0.5968,0.6643,315,0.6667,0.7619,0.7111,21
