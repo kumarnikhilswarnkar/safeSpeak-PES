@@ -57,9 +57,9 @@ export default function ComplaintTable({ complaints, columns = [], emptyTitle, e
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center [&>select]:min-w-0 sm:[&>select]:w-auto">
             <SlidersHorizontal className="hidden size-4 text-slate-400 lg:block" aria-hidden="true" />
-            <select className="input w-auto" value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Status filter">
+            <select className="input" value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Status filter">
               <option value="">All statuses</option>
               {Object.entries(STATUS_LABEL).map(([v, l]) => (
                 <option key={v} value={v}>
@@ -67,19 +67,19 @@ export default function ComplaintTable({ complaints, columns = [], emptyTitle, e
                 </option>
               ))}
             </select>
-            <select className="input w-auto" value={priority} onChange={(e) => setPriority(e.target.value)} aria-label="Priority filter">
+            <select className="input" value={priority} onChange={(e) => setPriority(e.target.value)} aria-label="Priority filter">
               <option value="">All priorities</option>
               {PRIORITIES.map((p) => (
                 <option key={p}>{p}</option>
               ))}
             </select>
-            <select className="input w-auto" value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Category filter">
+            <select className="input" value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Category filter">
               <option value="">All categories</option>
               {CATEGORIES.map((c) => (
                 <option key={c}>{c}</option>
               ))}
             </select>
-            <select className="input w-auto" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort order">
+            <select className="input" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort order">
               {Object.entries(SORTS).map(([v, s]) => (
                 <option key={v} value={v}>
                   Sort: {s.label}
@@ -96,20 +96,63 @@ export default function ComplaintTable({ complaints, columns = [], emptyTitle, e
           description={filtered ? 'Clear the search or filters to see more.' : emptyDescription}
         />
       ) : (
-        <div className="overflow-x-auto">
+        <>
+        {/* Phones and tablets: one card per complaint. */}
+        <ul className="stagger divide-y divide-slate-100 md:grid md:grid-cols-2 md:gap-3 md:divide-y-0 md:p-3 xl:hidden">
+          {rows.map((c) => (
+            <li key={c.complaint_id} className="min-w-0">
+              <Link
+                to={`/concerns/${c.complaint_id}`}
+                className="block h-full px-4 py-3.5 transition active:bg-slate-100 md:rounded-xl md:border md:border-slate-200 md:hover:-translate-y-0.5 md:hover:border-brand-200 md:hover:shadow-(--shadow-pop)"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-mono text-xs font-semibold text-brand-700">{c.complaint_id}</p>
+                    <p className="mt-0.5 truncate text-sm font-medium text-slate-900">{c.category}</p>
+                  </div>
+                  <PriorityBadge priority={c.priority} />
+                </div>
+                <p className="mt-1 line-clamp-2 text-sm text-slate-500">{c.description}</p>
+                <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                  <StatusBadge status={c.status} />
+                  <TatBadge state={c.tat.state} />
+                  <EscalationBadge complaint={c} />
+                  {show('decision') && <DecisionBadge source={c.decision_source} />}
+                </div>
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-slate-500">
+                  <span>{stageLabel(c)}</span>
+                  <span>
+                    {c.tat.state !== 'STOPPED' ? formatRemaining(c.tat.deadline_at) : `Updated ${timeAgo(c.updated_at)}`}
+                  </span>
+                </div>
+                {(show('assignee') || show('complainant')) && (
+                  <p className="mt-1 truncate text-xs text-slate-500">
+                    {show('assignee') && <>Assigned to {c.assigned_to ? c.assigned_to.name : '—'}</>}
+                    {show('assignee') && show('complainant') && ' · '}
+                    {show('complainant') && <>By {c.complainant.name}</>}
+                  </p>
+                )}
+                {show('confidence') && (
+                  <div className="mt-2">
+                    <ConfidenceBar value={c.ai.confidence} threshold={c.ai.threshold} size="sm" />
+                  </div>
+                )}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        {/* Desktop: the full table (scrolls inside its card if needed). */}
+        <div className="hidden overflow-x-auto xl:block">
           <table className="min-w-full divide-y divide-slate-100">
             <thead className="bg-slate-50/60">
               <tr>
                 <th className="table-head">Complaint</th>
                 <th className="table-head">Priority</th>
                 <th className="table-head">Status</th>
-                <th className="table-head">Stage</th>
-                <th className="table-head">TAT</th>
-                {show('confidence') && <th className="table-head w-40">AI confidence</th>}
-                {show('decision') && <th className="table-head">Decision</th>}
+                <th className="table-head">TAT · updated</th>
+                {show('confidence') && <th className="table-head w-32">AI confidence</th>}
                 {show('assignee') && <th className="table-head">Assigned to</th>}
                 {show('complainant') && <th className="table-head">Submitted by</th>}
-                <th className="table-head">Updated</th>
                 <th className="w-8" aria-hidden="true" />
               </tr>
             </thead>
@@ -117,10 +160,10 @@ export default function ComplaintTable({ complaints, columns = [], emptyTitle, e
               {rows.map((c) => (
                 <tr
                   key={c.complaint_id}
-                  className="cursor-pointer hover:bg-slate-50"
+                  className="group cursor-pointer transition-colors hover:bg-brand-50/40"
                   onClick={() => navigate(`/concerns/${c.complaint_id}`)}
                 >
-                  <td className="table-cell max-w-xs">
+                  <td className="table-cell max-w-[15rem]">
                     <Link
                       to={`/concerns/${c.complaint_id}`}
                       className="font-mono text-xs font-semibold text-brand-700 hover:underline"
@@ -138,23 +181,20 @@ export default function ComplaintTable({ complaints, columns = [], emptyTitle, e
                     <div className="flex flex-col items-start gap-1">
                       <StatusBadge status={c.status} />
                       <EscalationBadge complaint={c} />
+                      {show('decision') && <DecisionBadge source={c.decision_source} />}
+                      <span className="text-xs text-slate-500">{stageLabel(c)}</span>
                     </div>
                   </td>
-                  <td className="table-cell text-slate-600">{stageLabel(c)}</td>
                   <td className="table-cell">
                     <TatBadge state={c.tat.state} />
                     {c.tat.state !== 'STOPPED' && (
                       <p className="mt-1 text-xs whitespace-nowrap text-slate-500">{formatRemaining(c.tat.deadline_at)}</p>
                     )}
+                    <p className="mt-0.5 text-xs whitespace-nowrap text-slate-400">Updated {timeAgo(c.updated_at)}</p>
                   </td>
                   {show('confidence') && (
                     <td className="table-cell">
                       <ConfidenceBar value={c.ai.confidence} threshold={c.ai.threshold} size="sm" />
-                    </td>
-                  )}
-                  {show('decision') && (
-                    <td className="table-cell">
-                      <DecisionBadge source={c.decision_source} />
                     </td>
                   )}
                   {show('assignee') && (
@@ -163,15 +203,15 @@ export default function ComplaintTable({ complaints, columns = [], emptyTitle, e
                     </td>
                   )}
                   {show('complainant') && <td className="table-cell text-slate-600">{c.complainant.name}</td>}
-                  <td className="table-cell text-xs whitespace-nowrap text-slate-500">{timeAgo(c.updated_at)}</td>
                   <td className="table-cell pr-3 text-slate-300">
-                    <ChevronRight className="size-4" aria-hidden="true" />
+                    <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:text-brand-500" aria-hidden="true" />
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   )

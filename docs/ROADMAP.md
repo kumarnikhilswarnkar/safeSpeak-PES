@@ -10,18 +10,17 @@
   builds, Compose smoke test (verified green on branch `final-architecture`).
 - Documentation: `docs/docker.md`, `docs/ci-cd.md`, `docs/deployment.md`, `docs/security.md`.
 
-## Phase 2: ML pipeline and final model selection (implemented, 7 October 2026; awaiting review)
+## Phase 2: ML pipeline and final model selection (completed, 7 October 2026)
 
-- Inspectable, reproducible local ML pipeline in `ml/safespeak_ml/` on the approved 600-record dataset.
-- Candidates 0–9 for category and priority separately (majority floor, frozen keyword baseline, TF-IDF and
-  n-gram linear models, hybrid, MiniLM embeddings + LR, SetFit if it passes its feasibility gate).
-- 40-group / 120-record holdout, repeated grouped cross-validation, calibration, per-task thresholds,
-  pre-declared selection rule, generated reports, versioned artifacts (`ml/artifacts/v3`).
-- Backend loads exactly the selected artifacts (`deployed.json`). No external AI service.
-- Result: category = hybrid (#7), priority = words + chars + LR (#5); SetFit not evaluated (gate failed);
-  disclosed deployment constraint: no PyTorch in the backend. See `docs/ml_evaluation.md`.
+- Reproducible local ML pipeline in `ml/safespeak_ml/` on the approved 600-record dataset; candidates 0-9 for
+  category and priority, 5 x 5 grouped cross-validation, 40-group / 120-record holdout, per-task calibration and
+  thresholds, generated reports (`ml/reports/v3`), checksummed artifacts (`ml/artifacts/v3/deployed.json`).
+- Deployed: category = hybrid (#7), threshold 0.57; priority = words + chars + LR (#5), threshold 0.63; disclosed
+  deployment constraint (no PyTorch in the backend); SetFit not evaluated (failed its 10-minute gate).
+- Committed as `a5a8c3a` and pushed; CI green (backend on SQLite and PostgreSQL, ML integrity, frontend build,
+  Docker images and Compose smoke test). Details: `docs/ml_evaluation.md`.
 
-## Phase 3: SafeSpeak chatbot and final application features (planned, not started)
+## Phase 3: SafeSpeak chatbot and final application features (in progress)
 
 The chatbot **must** be built in Phase 3 and meet all of these requirements:
 
@@ -36,6 +35,25 @@ The chatbot **must** be built in Phase 3 and meet all of these requirements:
 8. **Docker + CI/CD integration** (runs in the Compose stack, covered by the CI pipeline).
 9. **Tests for unauthorized complaint access** (other users' complaints, inactive users, unauthenticated calls).
 10. **UI integration** in the React frontend.
+
+### Phase 3 progress (7 October 2026, uncommitted, awaiting review)
+
+| Requirement | Status |
+|---|---|
+| 1-7 Assistant: status, ID lookup, TAT/deadline/authority, strict RBAC, database-only answers, no external AI | Done: `docs/assistant.md` |
+| 8 Docker + CI/CD | Done in code (new tests run in the existing CI job; no new service); CI not yet run on Phase 3 |
+| 9 Unauthorized-access tests | Done: `backend/tests/test_assistant.py` (27 tests) |
+| 10 UI integration | Done: floating assistant on every page + `/assistant` page |
+| ML failure handling | Done: a missing or failing model no longer rejects complaints; they go to human review |
+| Professional UI, animations, responsive 375 / 768 / 1280 px | Done: motion system, skeletons, responsive lists/dialogs/menus; checked by DOM measurement |
+| One-URL deployment readiness | Done: nginx single entry point; container health no longer depends on the model |
+| PES branding, collapsible sidebar, Log out/Profile placement | Done (12 October 2026) |
+| Self-service profile with photo upload | Done: migration `d4e8b1f27a90`, `backend/tests/test_profile.py` |
+| Inspection findings A-F re-verified | Done: `backend/tests/test_access_and_routing.py`; TAT panel scope/reset labels clarified |
+| Administrator intervention for exhausted chains | Done (2 November 2026): `docs/admin_intervention.md`, `backend/tests/test_admin_intervention.py` |
+| Assistant conversation engine (follow-ups, why/review/summary, paging) | Done: `docs/assistant.md`, conversation tests in `backend/tests/test_assistant.py` |
+| Escalation step vs authority level display; reroute-then-accept bug; IST day buckets; metric definitions; student-facing AI card | Done (see the audit in the 2 November report) |
+| One-command local start | Done: `start-safespeak.ps1` / `start-safespeak.cmd` |
 
 Other Phase 3+ items (from the implementation phases): human-review UI refinements, admin rule editing,
 frontend polish, full testing pass, and production deployment (HTTPS, backups, GHCR images).

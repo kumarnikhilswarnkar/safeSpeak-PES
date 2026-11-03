@@ -1,9 +1,59 @@
 // Shared UI primitives. Plain React + Tailwind; no component library needed.
 import { AlertTriangle, Inbox, Loader2, X } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 export function cx(...classes) {
   return classes.filter(Boolean).join(' ')
+}
+
+const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+/** Heading text that appears word by word. Screen readers get the plain text once. */
+export function AnimatedText({ text, as: Tag = 'span', className, delay = 0, step = 45 }) {
+  const words = String(text).split(' ')
+  return (
+    <Tag className={className} aria-label={text}>
+      {words.map((w, i) => (
+        <span key={`${w}-${i}`}>
+          <span aria-hidden="true" className="inline-block animate-word" style={{ animationDelay: `${delay + i * step}ms` }}>
+            {w}
+          </span>
+          {i < words.length - 1 ? ' ' : ''}
+        </span>
+      ))}
+    </Tag>
+  )
+}
+
+/** Animates a number from 0 to its value once (numbers only; other values render as-is). */
+export function CountUp({ value, duration = 650 }) {
+  const numeric = typeof value === 'number' && Number.isFinite(value)
+  const [shown, setShown] = useState(numeric && !reducedMotion() ? 0 : value)
+  useEffect(() => {
+    if (!numeric || reducedMotion()) {
+      setShown(value)
+      return undefined
+    }
+    let frame
+    const start = performance.now()
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / duration)
+      setShown(Math.round(value * (1 - (1 - t) ** 3)))
+      if (t < 1) frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    // Browsers pause animation frames in background tabs: always land on the real value.
+    const done = setTimeout(() => {
+      cancelAnimationFrame(frame)
+      setShown(value)
+    }, duration + 50)
+    return () => {
+      cancelAnimationFrame(frame)
+      clearTimeout(done)
+    }
+  }, [value, numeric, duration])
+  return numeric ? shown : value
 }
 
 export function PageHeader({ eyebrow, title, description, actions }) {
@@ -11,8 +61,12 @@ export function PageHeader({ eyebrow, title, description, actions }) {
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         {eyebrow && <p className="eyebrow mb-1">{eyebrow}</p>}
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{title}</h1>
-        {description && <p className="mt-1 max-w-3xl text-sm text-slate-500">{description}</p>}
+        {typeof title === 'string' ? (
+          <AnimatedText as="h1" text={title} className="text-2xl font-semibold tracking-tight text-balance text-slate-900 sm:text-[1.65rem]" />
+        ) : (
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{title}</h1>
+        )}
+        {description && <p className="mt-1 max-w-3xl animate-fade text-sm text-slate-500 [animation-delay:150ms]">{description}</p>}
       </div>
       {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
     </div>
@@ -84,7 +138,7 @@ export function StatCard({ label, value, icon: Icon, tone = 'brand', hint, onCli
       onClick={onClick}
       className={cx(
         'card flex items-start gap-3 p-4 text-left',
-        onClick && 'transition hover:border-brand-200 hover:shadow-(--shadow-pop)',
+        onClick ? 'card-hover cursor-pointer' : 'transition-shadow hover:shadow-(--shadow-pop)',
         active && 'border-brand-500 ring-2 ring-brand-100',
       )}
     >
@@ -95,7 +149,9 @@ export function StatCard({ label, value, icon: Icon, tone = 'brand', hint, onCli
       )}
       <span className="min-w-0">
         <span className="block text-xs font-medium text-slate-500">{label}</span>
-        <span className="mt-0.5 block text-2xl font-semibold tracking-tight text-slate-900 tabular-nums">{value}</span>
+        <span className="mt-0.5 block text-2xl font-semibold tracking-tight text-slate-900 tabular-nums">
+          <CountUp value={value} />
+        </span>
         {hint && <span className="mt-0.5 block text-xs text-slate-500">{hint}</span>}
       </span>
     </Tag>
@@ -106,21 +162,57 @@ export function Spinner({ className }) {
   return <Loader2 className={cx('size-4 animate-spin', className)} aria-hidden="true" />
 }
 
-export function LoadingState({ label = 'Loading…' }) {
+/** Page-shaped placeholder while data loads (stat tiles + content cards). */
+export function LoadingState({ label = 'Loading…', variant = 'page' }) {
+  if (variant === 'inline') {
+    return (
+      <div className="flex items-center justify-center gap-2 py-16 text-sm text-slate-500" role="status">
+        <Spinner /> {label}
+      </div>
+    )
+  }
   return (
-    <div className="flex items-center justify-center gap-2 py-16 text-sm text-slate-500" role="status">
-      <Spinner /> {label}
+    <div role="status" aria-live="polite" className="animate-fade">
+      <span className="sr-only">{label}</span>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="card flex items-start gap-3 p-4">
+            <Skeleton className="size-9 rounded-lg" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-3 w-2/3" />
+              <Skeleton className="h-6 w-1/3" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-6 grid gap-6 xl:grid-cols-3">
+        <div className="card space-y-4 p-5 xl:col-span-2">
+          <Skeleton className="h-4 w-40" />
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex items-center gap-4">
+              <Skeleton className="h-10 flex-1" />
+              <Skeleton className="hidden h-6 w-20 sm:block" />
+            </div>
+          ))}
+        </div>
+        <div className="card space-y-3 p-5">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-3 w-5/6" />
+          <Skeleton className="h-3 w-4/6" />
+        </div>
+      </div>
     </div>
   )
 }
 
 export function Skeleton({ className }) {
-  return <div className={cx('animate-pulse rounded-md bg-slate-200/70', className)} />
+  return <div className={cx('skeleton', className)} aria-hidden="true" />
 }
 
 export function EmptyState({ icon: Icon = Inbox, title, description, action }) {
   return (
-    <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
+    <div className="flex animate-enter flex-col items-center justify-center px-6 py-12 text-center">
       <span className="grid size-11 place-items-center rounded-full bg-slate-100 text-slate-400">
         <Icon className="size-5" aria-hidden="true" />
       </span>
@@ -182,9 +274,11 @@ export function Modal({ open, title, description, onClose, children, footer, siz
     }
   }, [open, onClose])
   if (!open) return null
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center">
-      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[1px]" onClick={onClose} aria-hidden="true" />
+  // Portal to <body>: an animated (transformed) page container would otherwise become the
+  // containing block for this fixed overlay and squeeze it into the page column.
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
+      <div className="absolute inset-0 animate-fade bg-slate-900/40 backdrop-blur-[2px]" onClick={onClose} aria-hidden="true" />
       <div
         ref={panel}
         role="dialog"
@@ -192,23 +286,29 @@ export function Modal({ open, title, description, onClose, children, footer, siz
         aria-label={title}
         tabIndex={-1}
         className={cx(
-          'relative w-full rounded-xl bg-white shadow-(--shadow-pop) outline-none',
+          // Bottom sheet on phones, centred dialog from 640px; never taller than the screen.
+          'relative flex max-h-[calc(100dvh-1rem)] w-full animate-sheet flex-col rounded-t-2xl bg-white shadow-(--shadow-pop) outline-none sm:max-h-[calc(100dvh-4rem)] sm:animate-pop sm:rounded-xl',
           size === 'lg' ? 'max-w-2xl' : 'max-w-md',
         )}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
           <div>
             <h2 className="text-base font-semibold text-slate-900">{title}</h2>
             {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
           </div>
-          <button type="button" className="btn-ghost -mr-2 p-1.5" onClick={onClose} aria-label="Close">
-            <X className="size-4" />
+          <button type="button" className="btn-ghost -mt-1 -mr-2 grid size-10 shrink-0 place-items-center p-0" onClick={onClose} aria-label="Close">
+            <X className="size-4.5" />
           </button>
         </div>
-        <div className="px-5 py-4">{children}</div>
-        {footer && <div className="flex justify-end gap-2 border-t border-slate-100 px-5 py-3">{footer}</div>}
+        <div className="min-h-0 overflow-y-auto overscroll-contain px-5 py-4">{children}</div>
+        {footer && (
+          <div className="flex flex-col-reverse gap-2 border-t border-slate-100 px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:flex-row sm:justify-end [&>*]:w-full sm:[&>*]:w-auto">
+            {footer}
+          </div>
+        )}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

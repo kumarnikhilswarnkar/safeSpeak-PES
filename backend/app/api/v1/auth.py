@@ -39,4 +39,5 @@ def me(user: CurrentUser) -> CurrentUserOut:
     return CurrentUserOut(
         **UserOut.model_validate(user).model_dump(),
         permissions=sorted(permissions_for(user.role)),
+        has_photo=user.has_photo,
     )

@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, Clock, FilePlus2, Lock, Route, Send, ShieldCheck, UserCog } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Clock, FilePlus2, Lock, MessageCircleQuestion, Route, Send, ShieldCheck, UserCog } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -6,6 +6,7 @@ import { submitConcern } from '../../api/concerns.js'
 import { useAuth } from '../../auth/AuthContext.jsx'
 import AiAnalysisCard from '../../components/AiAnalysisCard.jsx'
 import AppShell from '../../components/AppShell.jsx'
+import { useAssistant } from '../../components/assistant/AssistantContext.jsx'
 import { PriorityBadge } from '../../components/Badges.jsx'
 import { useToast } from '../../components/Toast.jsx'
 import { Alert, Card, KeyValue, PageHeader, Spinner } from '../../components/ui.jsx'
@@ -17,15 +18,25 @@ const MAX = 5000
 function Result({ complaint: c, onAnother }) {
   const review = c.ai.flagged_for_review
   const last = c.routing?.last_decision
+  const assistant = useAssistant()
+  function ask() {
+    assistant.setOpen(true)
+    assistant.send(`Status of ${c.complaint_id}`)
+  }
   return (
     <div className="space-y-6">
-      <Alert tone="green" icon={CheckCircle2} title={`Complaint ${c.complaint_id} submitted`}>
-        Keep this ID to track your complaint. Everything below happened automatically within the request.
-      </Alert>
+      <div className="animate-pop">
+        <Alert tone="green" icon={CheckCircle2} title={`Complaint ${c.complaint_id} submitted`}>
+          Keep this ID to track your complaint. Everything below happened automatically within the request.
+          <button type="button" onClick={ask} className="mt-2 flex items-center gap-1.5 text-sm font-medium text-emerald-800 underline-offset-2 hover:underline">
+            <MessageCircleQuestion className="size-4" aria-hidden="true" /> Ask the SafeSpeak Assistant about it
+          </button>
+        </Alert>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <AiAnalysisCard ai={c.ai} compact={false} />
+          <AiAnalysisCard ai={c.ai} compact={false} technical={false} status={c.status} />
         </div>
         <Card title="What happens next" icon={Route}>
           <dl className="space-y-3">
@@ -156,7 +167,7 @@ export default function SubmitComplaintPage() {
           </form>
 
           <Card title="How your complaint is handled" icon={ShieldCheck}>
-            <ol className="space-y-4 text-sm">
+            <ol className="stagger space-y-4 text-sm">
               {[
                 [FilePlus2, 'A unique SSP complaint ID is issued.'],
                 [ShieldCheck, 'The AI suggests a category and priority with a confidence score.'],

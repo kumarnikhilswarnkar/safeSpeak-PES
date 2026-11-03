@@ -31,6 +31,9 @@ class Permission(StrEnum):
     VIEW_SCOPED_COMPLAINTS = "view_scoped_complaints"  # read-only
     MANAGE_USERS = "manage_users"
     MANAGE_RULES_AND_SETTINGS = "manage_rules_and_settings"
+    # Reassign a complaint whose escalation chain is exhausted (administrator intervention).
+    # Separate from the handler permissions: an administrator still cannot review or resolve.
+    INTERVENE_EXHAUSTED = "intervene_exhausted_complaints"
 
 
 # Authority roles hold an authority level (L1, L2, ...) in the configured hierarchy.
@@ -64,6 +67,7 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
             Permission.VIEW_SCOPED_COMPLAINTS,
             Permission.MANAGE_USERS,
             Permission.MANAGE_RULES_AND_SETTINGS,
+            Permission.INTERVENE_EXHAUSTED,
         }
     ),
 }

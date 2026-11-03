@@ -54,7 +54,7 @@ function Body({ data: { queue, overview }, go }) {
   const t = overview.totals
   return (
     <>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+      <div className="stagger grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         <StatCard label="Pending human reviews" value={count('review')} icon={UserCog} tone="violet" onClick={() => go('review')} hint="Your decision needed" />
         <StatCard label="Low-confidence complaints" value={count('low')} icon={Gauge} tone="amber" onClick={() => go('low')} hint={`Below ${percent(overview.threshold)} threshold`} />
         <StatCard label="Assigned to me (open)" value={count('all')} icon={Inbox} tone="brand" onClick={() => go('all')} />

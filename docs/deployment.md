@@ -15,6 +15,18 @@ HTTPS, backups and GHCR images is Phase 8; the steps below are the plan and are 
 | Transport | http://localhost | http (Codespaces forwards over HTTPS) | **HTTPS** (nginx `deploy/nginx/tls.conf`, HSTS) |
 | Secrets | `backend/.env` | `.env` from `scripts/generate_env.py` | `.env` on the server (or a secrets manager), never in Git |
 
+## Target: one URL for phone, tablet and desktop
+
+The finished application is one web address (e.g. `https://safespeak.<institution>`), served by the nginx
+proxy: `/` is the React app, `/api/` the FastAPI backend; PostgreSQL and the ML model run inside the stack
+(the model is loaded by the backend; there is no separate ML service). Users only open the URL; nothing is
+started by hand. All services restart automatically (`restart: unless-stopped`), and the database migration
+runs before the backend starts. The same responsive frontend serves phones, tablets and desktops.
+Localhost/Codespaces are for development and testing only.
+
+Uploaded profile photos live in the `media` named volume (`MEDIA_DIR=/app/media`); back it up together with the
+database. nginx accepts up to 3 MB only on `/api/v1/profile/photo` (64 KB elsewhere).
+
 ## Production checklist (Phase 8)
 
 1. Server (VM) with Docker Engine + Compose; firewall open for 80/443 only.

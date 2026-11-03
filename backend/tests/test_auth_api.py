@@ -202,8 +202,10 @@ def test_me_with_valid_token_returns_safe_profile(client, make_user, login):
     assert response.status_code == 200
     body = response.json()
     assert set(body) == {
-        "id", "name", "email", "role", "department", "authority_level", "is_active", "permissions",
+        "id", "name", "email", "role", "department", "authority_level", "is_active", "permissions", "has_photo",
     }
+    # Personal profile data (phone, stored photo name) is only returned by GET /profile.
+    assert not {"phone", "photo_filename", "password_hash"} & set(body)
     assert body["email"] == f"student@{TEST_DOMAIN}"
     assert body["department"]["code"] == "MCA"
     assert body["is_active"] is True

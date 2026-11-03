@@ -32,6 +32,8 @@ logger = logging.getLogger("safespeak.triage")
 LOW_CATEGORY_CONFIDENCE = "LOW_CATEGORY_CONFIDENCE"
 LOW_PRIORITY_CONFIDENCE = "LOW_PRIORITY_CONFIDENCE"
 HIGH_SEVERITY = "HIGH_SEVERITY"
+# The model was not loaded or failed: the complaint is accepted and goes to a human.
+MODEL_UNAVAILABLE = "MODEL_UNAVAILABLE"
 TASK_LABELS = {"category": CATEGORIES, "priority": PRIORITIES}
 
 

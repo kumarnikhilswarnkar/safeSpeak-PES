@@ -106,9 +106,18 @@ export function AuthProvider({ children }) {
     [state.token, logout],
   )
 
+  // After a profile change: merge the server's returned fields into the signed-in user
+  // (name, has_photo, ...) and bump photoVersion so avatars reload. Role and permissions
+  // are never taken from here; they only change by signing in again.
+  const [photoVersion, setPhotoVersion] = useState(0)
+  const updateUser = useCallback((profile) => {
+    setState((s) => (s.user ? { ...s, user: { ...s.user, name: profile.name, has_photo: profile.has_photo } } : s))
+    setPhotoVersion((v) => v + 1)
+  }, [])
+
   const value = useMemo(
-    () => ({ ...state, login, logout, authRequest }),
-    [state, login, logout, authRequest],
+    () => ({ ...state, login, logout, authRequest, updateUser, photoVersion }),
+    [state, login, logout, authRequest, updateUser, photoVersion],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

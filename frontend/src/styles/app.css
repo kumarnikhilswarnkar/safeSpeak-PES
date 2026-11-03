@@ -11,6 +11,9 @@
   --color-brand-700: #14306b;
   --color-brand-600: #1a3f8c;
   --color-brand-500: #1f4aa8;
+  --color-brand-400: #4f72c4;
+  --color-brand-300: #8ea6dc;
+  --color-brand-200: #c5d3ef;
   --color-brand-100: #e6ecf8;
   --color-brand-50: #f2f5fc;
   --color-accent-600: #d4660c;
@@ -67,5 +70,120 @@
   }
   .table-cell {
     @apply px-4 py-3 align-middle text-sm;
+  }
+}
+
+/* ---- Motion system ----------------------------------------------------------------
+   Short, subtle, transform/opacity only (no layout thrash). Everything is disabled
+   for users who ask the OS for reduced motion. */
+@theme {
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-enter: enter 0.45s var(--ease-out-soft) both;
+  --animate-fade: fade 0.3s ease-out both;
+  --animate-pop: pop 0.22s var(--ease-out-soft) both;
+  --animate-sheet: sheet 0.32s var(--ease-out-soft) both;
+  --animate-drawer: drawer 0.28s var(--ease-out-soft) both;
+  --animate-word: word 0.6s var(--ease-out-soft) both;
+  --animate-message: message 0.32s var(--ease-out-soft) both;
+}
+
+@keyframes enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pop {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes sheet {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes drawer {
+  from { transform: translateX(-100%); }
+  to { transform: none; }
+}
+@keyframes word {
+  from { opacity: 0; transform: translateY(0.45em); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+@keyframes message {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes shimmer {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+@keyframes typing {
+  0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+@keyframes float {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(0, -18px, 0) scale(1.04); }
+}
+
+@layer components {
+  /* Children enter one after another (cards, list rows, stat tiles). */
+  .stagger > * {
+    animation: var(--animate-enter);
+  }
+  .stagger > *:nth-child(2) { animation-delay: 40ms; }
+  .stagger > *:nth-child(3) { animation-delay: 80ms; }
+  .stagger > *:nth-child(4) { animation-delay: 120ms; }
+  .stagger > *:nth-child(5) { animation-delay: 160ms; }
+  .stagger > *:nth-child(6) { animation-delay: 200ms; }
+  .stagger > *:nth-child(n + 7) { animation-delay: 240ms; }
+
+  .card-hover {
+    @apply transition duration-200 ease-out hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-(--shadow-pop);
+  }
+  .skeleton {
+    @apply rounded-md;
+    background: linear-gradient(90deg, rgb(226 232 240 / 0.7) 25%, rgb(241 245 249) 50%, rgb(226 232 240 / 0.7) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+  .typing-dot {
+    @apply inline-block size-1.5 rounded-full bg-slate-400;
+    animation: typing 1.2s ease-in-out infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.3s; }
+  .blob {
+    animation: float 12s ease-in-out infinite;
+  }
+}
+
+/* Small inline controls (chips, text buttons) get a comfortable tap height on phones and on any
+   touch screen (tablets too), but keep their compact size with a mouse on wider screens. */
+@media (max-width: 639px), (pointer: coarse) {
+  .tap-target {
+    min-height: 40px;
+  }
+}
+
+/* Touch screens: comfortable targets, and 16px inputs so iOS does not zoom on focus. */
+@media (pointer: coarse) {
+  .btn-primary, .btn-accent, .btn-secondary, .btn-danger {
+    min-height: 44px;
+  }
+  .input {
+    font-size: 16px;
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

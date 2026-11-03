@@ -35,7 +35,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     try:
         triage_model = load_triage_model(settings)
     except TriageModelError as exc:
-        # The API still starts (sign-in, reading complaints), but submissions are refused with 503.
+        # The API still starts; submissions are accepted and always go to human review.
         logger.error("AI triage model not loaded: %s", exc)
         triage_model = None
 

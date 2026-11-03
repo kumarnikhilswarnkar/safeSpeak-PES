@@ -30,6 +30,7 @@ export const PERMISSION_LABEL = {
   view_scoped_complaints: 'View complaints in scope (read-only)',
   manage_users: 'Manage users',
   manage_rules_and_settings: 'Manage rules and settings',
+  intervene_exhausted_complaints: 'Reassign complaints whose escalation chain is exhausted',
 }
 
 export function homeFor(role) {

@@ -41,6 +41,8 @@ def settings(tmp_path: Path) -> Settings:
         demo_mode=True,
         # Tests drive the monitor directly instead of waiting for the background loop.
         tat_monitor_enabled=False,
+        # Uploaded files go to the test's temporary folder, never backend/media.
+        media_dir=tmp_path / "media",
     )
 
 

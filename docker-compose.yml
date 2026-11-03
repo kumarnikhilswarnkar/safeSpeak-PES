@@ -68,6 +68,9 @@ services:
       <<: *backend-env
       # Least-privilege role: read/insert/update rows only (deploy/postgres/app_role_grants.sql).
       DATABASE_URL: postgresql+psycopg://${APP_DB_USER:-safespeak_app}:${APP_DB_PASSWORD}@db:5432/${APP_DB_NAME:-safespeak}
+    volumes:
+      # Profile photos (not in the database, not served publicly).
+      - media:/app/media
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -121,3 +124,4 @@ services:
 
 volumes:
   pgdata:
+  media:

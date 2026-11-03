@@ -19,12 +19,14 @@ function errorMessage(body, status) {
 }
 
 /**
- * Calls the SafeSpeak API and returns parsed JSON.
+ * Calls the SafeSpeak API and returns parsed JSON (or a Blob with responseType 'blob').
+ * body is sent as JSON; rawBody (a File/Blob, e.g. a photo) is sent as-is with its type.
  * Throws ApiError for HTTP errors and for network failures (status 0).
  */
-export async function apiRequest(path, { method = 'GET', body, token, signal } = {}) {
-  const headers = { Accept: 'application/json' }
+export async function apiRequest(path, { method = 'GET', body, rawBody, token, signal, responseType } = {}) {
+  const headers = { Accept: responseType === 'blob' ? '*/*' : 'application/json' }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
+  if (rawBody !== undefined) headers['Content-Type'] = rawBody.type || 'application/octet-stream'
   if (token) headers.Authorization = `Bearer ${token}`
 
   let response
@@ -32,13 +34,15 @@ export async function apiRequest(path, { method = 'GET', body, token, signal } =
     response = await fetch(`${API_BASE_URL}${path}`, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: rawBody !== undefined ? rawBody : body === undefined ? undefined : JSON.stringify(body),
       signal,
     })
   } catch (error) {
     if (error.name === 'AbortError') throw error
     throw new ApiError('Cannot reach the SafeSpeak server', 0, null)
   }
+
+  if (responseType === 'blob' && response.ok) return response.blob()
 
   const text = await response.text()
   let data = null

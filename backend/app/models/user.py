@@ -39,8 +39,16 @@ class User(TimestampMixin, Base):
     )
     authority_level: Mapped[int | None] = mapped_column(Integer)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    # Self-service profile (users may edit only these, plus their display name).
+    phone: Mapped[str | None] = mapped_column(String(20))
+    # Server-generated file name in MEDIA_DIR/profile_photos; the image is never stored in the database.
+    photo_filename: Mapped[str | None] = mapped_column(String(80))
 
     department: Mapped[Department | None] = relationship()
+
+    @property
+    def has_photo(self) -> bool:
+        return self.photo_filename is not None
 
     def __repr__(self) -> str:  # never include the password hash
         return f"<User id={self.id} role={self.role} email={self.email}>"

@@ -28,11 +28,11 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="pointer-events-none fixed right-4 bottom-4 z-[60] flex w-full max-w-sm flex-col gap-2" aria-live="polite">
+      <div className="pointer-events-none fixed inset-x-4 bottom-20 z-[60] flex flex-col gap-2 sm:inset-x-auto sm:right-5 sm:bottom-24 sm:w-full sm:max-w-sm" aria-live="polite">
         {toasts.map((t) => {
           const { icon: Icon, className } = STYLES[t.tone] ?? STYLES.info
           return (
-            <div key={t.id} className="card pointer-events-auto flex items-start gap-3 p-3.5 shadow-(--shadow-pop)">
+            <div key={t.id} className="card pointer-events-auto flex animate-pop items-start gap-3 p-3.5 shadow-(--shadow-pop)">
               <Icon className={`mt-0.5 size-4.5 shrink-0 ${className}`} aria-hidden="true" />
               <div className="min-w-0 flex-1 text-sm">
                 {t.title && <p className="font-medium text-slate-900">{t.title}</p>}

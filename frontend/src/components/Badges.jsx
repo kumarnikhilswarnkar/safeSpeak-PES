@@ -63,7 +63,7 @@ export function EscalationBadge({ complaint }) {
   if (!complaint.escalated) return null
   return (
     <Badge tone="accent" icon={ArrowUpCircle}>
-      Escalated · L{complaint.escalation_level}
+      Escalated · step {complaint.escalation_level}
     </Badge>
   )
 }

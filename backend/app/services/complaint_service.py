@@ -5,6 +5,7 @@ Every function receives the authenticated User from the API layer; identity,
 role and reviewer are never taken from client input. Each state change writes
 an audit event in the same transaction.
 """
+import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
@@ -33,14 +34,21 @@ from app.services.errors import (
     PermissionDeniedError,
 )
 from app.services.id_service import next_complaint_code
+from app.services.keyword_features import keyword_category, keyword_priority
 from app.services.triage_service import (
+    MODEL_UNAVAILABLE,
     TriageModel,
+    TriageResult,
     effective_priority_threshold,
     effective_threshold,
     review_reasons,
 )
 
+logger = logging.getLogger("safespeak.complaints")
+
 HUMAN_DECISIONS = (DecisionSource.HUMAN_ACCEPTED, DecisionSource.HUMAN_OVERRIDDEN)
+FALLBACK_MODEL_NAME = "model-unavailable"
+FALLBACK_MODEL_VERSION = "keyword-fallback"
 
 
 def _user_ref(user: User | None) -> dict | None:
@@ -186,14 +194,59 @@ def reroute_targets(db: Session, reviewer: User, code: str) -> list[User]:
 
 # --- submission ------------------------------------------------------------------
 
-def submit(db: Session, settings: Settings, model: TriageModel, user: User, description: str) -> Complaint:
+@dataclass(frozen=True)
+class _Triage:
+    result: TriageResult
+    threshold: float
+    threshold_source: str
+    priority_threshold: float
+    priority_threshold_source: str
+    reasons: list[str]
+
+
+def _triage(settings: Settings, model: TriageModel | None, description: str) -> _Triage:
+    """AI triage, or - if the model is not loaded or inference fails - a safe fallback:
+    the complaint is still accepted, labelled provisionally by the frozen keyword rules
+    (only so it can be routed to a first reviewer), and ALWAYS sent to human review.
+    The fallback is recorded openly (model name, zero confidence, reason)."""
+    if model is not None:
+        try:
+            result = model.predict(description)
+            threshold, source = effective_threshold(settings, model)
+            p_threshold, p_source = effective_priority_threshold(settings, model)
+            return _Triage(result, threshold, source, p_threshold, p_source,
+                           review_reasons(result, threshold, settings, p_threshold))
+        except Exception as exc:  # an inference failure must never lose a complaint
+            logger.error("AI triage failed, using the human-review fallback: %s", type(exc).__name__)
+    category, priority = keyword_category(description), keyword_priority(description)
+    result = TriageResult(
+        model_name=FALLBACK_MODEL_NAME,
+        model_version=FALLBACK_MODEL_VERSION,
+        category=category,
+        category_confidence=0.0,
+        priority=priority,
+        priority_confidence=0.0,
+        probabilities={},
+        explanation={
+            "fallback": True,
+            "note": "The AI model was unavailable. Category and priority are provisional values from the "
+                    "frozen keyword rules, used only to route the complaint to a human reviewer.",
+            "keyword_baseline": {"category": category, "priority": priority},
+        },
+    )
+    threshold = settings.confidence_threshold or 1.0
+    p_threshold = settings.priority_confidence_threshold or threshold
+    return _Triage(result, threshold, MODEL_UNAVAILABLE, p_threshold, MODEL_UNAVAILABLE, [MODEL_UNAVAILABLE])
+
+
+def submit(db: Session, settings: Settings, model: TriageModel | None, user: User, description: str) -> Complaint:
     if not has_permission(user.role, Permission.SUBMIT_COMPLAINT):
         raise PermissionDeniedError("Your account cannot submit complaints")
 
-    result = model.predict(description)
-    threshold, threshold_source = effective_threshold(settings, model)
-    priority_threshold, priority_threshold_source = effective_priority_threshold(settings, model)
-    reasons = review_reasons(result, threshold, settings, priority_threshold)
+    triage = _triage(settings, model, description)
+    result, reasons = triage.result, triage.reasons
+    threshold, threshold_source = triage.threshold, triage.threshold_source
+    priority_threshold, priority_threshold_source = triage.priority_threshold, triage.priority_threshold_source
     flagged = bool(reasons)
     now = utcnow()
 
@@ -303,10 +356,38 @@ def _get_for_review(db: Session, reviewer: User, code: str) -> Complaint:
     return c
 
 
-def _confirm_review(db: Session, c: Complaint, reviewer: User, now: datetime) -> None:
+# Audit actions that (re)assign a complaint, and those among them chosen by a person.
+ASSIGNMENT_ACTIONS = ("assigned", "escalation_triggered", "rerouted", "admin_reassigned")
+MANUAL_ASSIGNMENT_ACTIONS = ("rerouted", "admin_reassigned")
+
+
+def _manually_assigned(c: Complaint) -> str | None:
+    """The action that produced the current assignment, if a person chose the assignee
+    (a reviewer's reroute or an administrator's intervention); otherwise None."""
+    last = next((e for e in reversed(c.events) if e.action in ASSIGNMENT_ACTIONS), None)
+    return last.action if last is not None and last.action in MANUAL_ASSIGNMENT_ACTIONS else None
+
+
+def _confirm_review(db: Session, c: Complaint, reviewer: User, now: datetime, category_changed: bool) -> None:
     """A flagged complaint has been decided by a human: route it for the final
-    category and start the resolution clock."""
+    category and start the resolution clock.
+
+    If a person chose the current assignee (reroute or administrator intervention)
+    and the decision did not change the category, that choice is kept: re-routing
+    by the chain would silently send the complaint back to someone else."""
     previous = _assignment_snapshot(c)
+    manual = _manually_assigned(c)
+    if manual and not category_changed:
+        c.status = ComplaintStatus.ASSIGNED
+        _set_deadline(db, c, TatStage.RESOLUTION, now)
+        audit_service.record(
+            db, c, "assigned", reviewer,
+            previous=previous,
+            new={**_assignment_snapshot(c), **tat_service.deadline_snapshot(c), "kept_manual_assignment": manual},
+            remarks="Kept the authority chosen by "
+            + ("a reviewer's reroute" if manual == "rerouted" else "the administrator's intervention"),
+        )
+        return
     routing, skipped = routing_service.route_from_level(db, c, c.escalation_level)
     if routing is None:
         raise ConfigurationError("No active authority is configured for the reviewed category")
@@ -354,7 +435,7 @@ def review(
             remarks=remarks,
         )
         if was_pending:
-            _confirm_review(db, c, reviewer, now)
+            _confirm_review(db, c, reviewer, now, category_changed=False)
 
     elif action == "override":
         if category is None and priority is None:
@@ -373,7 +454,7 @@ def review(
             remarks=remarks,
         )
         if was_pending:
-            _confirm_review(db, c, reviewer, now)
+            _confirm_review(db, c, reviewer, now, category_changed=previous["category"] != c.category)
         elif previous["priority"] != c.priority or previous["category"] != c.category:
             # Same clock, new allowance: the deadline follows the decided priority.
             before = tat_service.deadline_snapshot(c)
@@ -550,3 +631,138 @@ def routing_context(db: Session, c: Complaint) -> dict:
         else None,
         "manually_rerouted": manual is not None and (last is None or manual.id > last.id),
     }
+
+
+# --- administrator intervention (exhausted escalation chain) -------------------------------
+
+INTERVENTION_REASON_MIN = 10
+
+
+def _intervention_target(c: Complaint) -> tuple[str, str]:
+    """The stage the new authority works in, and the status the complaint gets.
+    Reassignment never resolves a complaint: a complaint still waiting for human
+    review stays in review; otherwise the new authority has not started yet."""
+    if c.status == ComplaintStatus.PENDING_REVIEW:
+        return TatStage.REVIEW, ComplaintStatus.PENDING_REVIEW
+    return TatStage.RESOLUTION, ComplaintStatus.ASSIGNED
+
+
+def _get_for_intervention(db: Session, admin: User, code: str) -> Complaint:
+    if not has_permission(admin.role, Permission.INTERVENE_EXHAUSTED):
+        raise PermissionDeniedError("Only an administrator can reassign an exhausted complaint")
+    c = get_visible(db, admin, code)
+    if c.status not in OPEN_STATUSES:
+        raise ConflictError(f"Complaint is {c.status}; only open complaints can be reassigned")
+    if not c.breached_at_top:
+        raise ConflictError("Administrator intervention is only for complaints whose escalation chain is exhausted")
+    return c
+
+
+def _intervention_candidates(db: Session, c: Complaint) -> list[User]:
+    """Active authorities other than the complainant and the current assignee."""
+    return list(
+        db.scalars(
+            select(User)
+            .where(
+                User.is_active.is_(True),
+                User.role.in_([r.value for r in AUTHORITY_ROLES]),
+                User.id.not_in([c.complainant_id, c.assigned_user_id or 0]),
+            )
+            .options(selectinload(User.department))
+            .order_by(User.authority_level, User.name)
+        ).all()
+    )
+
+
+def intervention_options(db: Session, admin: User, code: str, now: datetime | None = None) -> dict:
+    """What the administrator needs to decide: the eligible authorities (grouped by
+    department/office in the UI) and the new TAT that the configured rules give."""
+    c = _get_for_intervention(db, admin, code)
+    now = now or utcnow()
+    stage, status = _intervention_target(c)
+    rule = tat_service.resolve_rule(db, stage, c.category, c.priority, c.escalation_level)
+    candidates = _intervention_candidates(db, c)
+    departments = {u.department.id: u.department for u in candidates if u.department is not None}
+    return {
+        "complaint_id": c.complaint_code,
+        "current_assignee": _user_ref(c.assigned_user),
+        "category": c.category,
+        "priority": c.priority,
+        "escalation_level": c.escalation_level,
+        "new_stage": stage,
+        "new_status": status,
+        "tat": {
+            "rule_id": rule.id,
+            "hours": rule.tat_hours,
+            "deadline_at": (now + timedelta(hours=rule.tat_hours)).isoformat(),
+        },
+        "departments": [{"id": d.id, "code": d.code, "name": d.name, "kind": d.kind}
+                        for d in sorted(departments.values(), key=lambda d: d.name)],
+        "candidates": [
+            {"id": u.id, "name": u.name, "role": u.role, "authority_level": u.authority_level,
+             "department_id": u.department_id}
+            for u in candidates
+        ],
+        "reason_min_length": INTERVENTION_REASON_MIN,
+    }
+
+
+def admin_reassign(
+    db: Session,
+    admin: User,
+    code: str,
+    *,
+    target_user_id: int,
+    reason: str,
+    expected_assignee_id: int | None,
+    now: datetime | None = None,
+) -> Complaint:
+    """Reassign a complaint whose escalation chain is exhausted to an authority the
+    administrator chooses, with a mandatory reason and a new deadline from the
+    configured TAT rules. The original AI output and earlier human decisions are not
+    touched; the change is one append-only audit event (who, why, previous and new
+    authority, previous and new deadline). The complaint stays open and continues
+    through the normal workflow (review/resolution, TAT monitoring)."""
+    c = _get_for_intervention(db, admin, code)
+    # Lock the row on PostgreSQL so a concurrent reassignment/escalation cannot interleave.
+    db.execute(select(Complaint.id).where(Complaint.id == c.id).with_for_update())
+    if expected_assignee_id != c.assigned_user_id:
+        raise ConflictError("This complaint changed since you opened it. Reload it and try again.")
+    reason = (reason or "").strip()
+    if len(reason) < INTERVENTION_REASON_MIN:
+        raise InvalidRequestError(f"Give a reason of at least {INTERVENTION_REASON_MIN} characters")
+    target = db.get(User, target_user_id)
+    if (
+        target is None
+        or not target.is_active
+        or target.role not in AUTHORITY_ROLES
+        or target.id in (c.complainant_id, c.assigned_user_id)
+    ):
+        raise InvalidRequestError("Choose a different, active authority (not the complainant or the current assignee)")
+
+    now = now or utcnow()
+    stage, status = _intervention_target(c)
+    previous = {**_assignment_snapshot(c), **tat_service.deadline_snapshot(c), "breached_at_top": True}
+    c.assigned_user_id = target.id
+    c.assigned_user = target
+    c.handling_department_id = target.department_id
+    c.status = status
+    c.breached_at_top = False
+    _set_deadline(db, c, stage, now)
+    audit_service.record(
+        db, c, "admin_reassigned", admin,
+        previous=previous,
+        new={
+            **_assignment_snapshot(c),
+            **tat_service.deadline_snapshot(c),
+            "breached_at_top": False,
+            "intervention": {
+                "previous_assignee": previous["assigned_user"],
+                "new_assignee": _user_ref(target),
+                "reason": reason,
+            },
+        },
+        remarks=reason,
+    )
+    db.commit()
+    return _load(db, code)

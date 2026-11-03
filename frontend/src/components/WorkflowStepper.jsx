@@ -25,7 +25,7 @@ function steps(c) {
       icon: UserCog,
       state: flagged ? (c.status === 'PENDING_REVIEW' ? 'current' : 'done') : 'skipped',
     },
-    { label: 'Assigned', detail: `L${c.escalation_level} · TAT running`, icon: UserPlus, state: 'done' },
+    { label: 'Assigned', detail: `Step ${c.escalation_level} · TAT running`, icon: UserPlus, state: 'done' },
     {
       label: 'Human decision',
       detail: human ? (human.action === 'accepted' ? 'AI accepted' : 'AI overridden') : flagged ? 'Pending' : 'AI applied',
@@ -37,36 +37,49 @@ function steps(c) {
       : c.breached_at_top
         ? { label: 'Exhausted', detail: 'Admin attention', icon: ShieldAlert, state: 'danger' }
         : c.escalated
-          ? { label: 'Escalated', detail: `Now at L${c.escalation_level}`, icon: ArrowUpCircle, state: 'alert' }
+          ? { label: 'Escalated', detail: `Now at step ${c.escalation_level}`, icon: ArrowUpCircle, state: 'alert' }
           : { label: 'Resolved / escalated', detail: 'Before / after deadline', icon: CheckCircle2, state: 'upcoming' },
   ]
 }
 
+const reached = (state) => ['done', 'alert', 'danger', 'current'].includes(state)
+
+/** Workflow progress: a vertical list on phones, a horizontal stepper from 768px. */
 export default function WorkflowStepper({ complaint }) {
   const items = steps(complaint)
   return (
-    <div className="card overflow-x-auto px-4 py-4">
-      <ol className="flex min-w-[720px] items-start">
+    <div className="card px-4 py-4">
+      <ol className="flex flex-col md:flex-row md:items-start">
         {items.map((s, i) => {
           const Icon = s.state === 'done' ? Check : s.state === 'skipped' ? Minus : s.icon
           return (
-            <li key={s.label} className="relative flex flex-1 flex-col items-center text-center">
-              {i > 0 && (
+            <li
+              key={s.label}
+              className="relative flex animate-enter items-start gap-3 pb-4 last:pb-0 md:flex-1 md:flex-col md:items-center md:gap-0 md:pb-0 md:text-center"
+              style={{ animationDelay: `${i * 60}ms` }}
+            >
+              {/* Connector: vertical (phones) to the next step, horizontal (tablet+) from the previous one. */}
+              {i < items.length - 1 && (
                 <span
-                  className={cx(
-                    'absolute top-4 right-1/2 h-0.5 w-full -translate-y-1/2',
-                    ['done', 'alert', 'danger', 'current'].includes(s.state) ? 'bg-emerald-400' : 'bg-slate-200',
-                  )}
+                  className={cx('absolute top-8 bottom-0 left-4 w-0.5 -translate-x-1/2 md:hidden', reached(items[i + 1].state) ? 'bg-emerald-400' : 'bg-slate-200')}
                   aria-hidden="true"
                 />
               )}
-              <span className={cx('relative z-10 grid size-8 place-items-center rounded-full border-2', STYLE[s.state])}>
+              {i > 0 && (
+                <span
+                  className={cx('absolute top-4 right-1/2 hidden h-0.5 w-full -translate-y-1/2 md:block', reached(s.state) ? 'bg-emerald-400' : 'bg-slate-200')}
+                  aria-hidden="true"
+                />
+              )}
+              <span className={cx('relative z-10 grid size-8 shrink-0 place-items-center rounded-full border-2 transition-colors', STYLE[s.state])}>
                 <Icon className="size-4" aria-hidden="true" />
               </span>
-              <span className={cx('mt-2 text-xs font-semibold', s.state === 'upcoming' ? 'text-slate-400' : 'text-slate-800')}>
-                {s.label}
+              <span className="min-w-0 pt-1 md:pt-0">
+                <span className={cx('block text-xs font-semibold md:mt-2', s.state === 'upcoming' ? 'text-slate-400' : 'text-slate-800')}>
+                  {s.label}
+                </span>
+                <span className="mt-0.5 block text-[11px] text-slate-500 md:px-1">{s.detail}</span>
               </span>
-              <span className="mt-0.5 px-1 text-[11px] text-slate-500">{s.detail}</span>
             </li>
           )
         })}

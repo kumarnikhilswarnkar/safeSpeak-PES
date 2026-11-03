@@ -8,7 +8,7 @@ current user is allowed to see:
 Volumes are small (a campus prototype), so aggregation is done in Python.
 """
 from collections import Counter
-from datetime import timedelta
+from datetime import timedelta, tzinfo
 from statistics import mean, median
 
 from sqlalchemy import select
@@ -31,7 +31,7 @@ def _scope(db: Session, user: User) -> tuple[str, list[Complaint]]:
     return "own", complaint_service.list_mine(db, user)
 
 
-def overview(db: Session, user: User, threshold: float | None, model_name: str | None) -> dict:
+def overview(db: Session, user: User, threshold: float | None, model_name: str | None, tz: tzinfo | None = None) -> dict:
     scope, complaints = _scope(db, user)
     now = utcnow()
     open_ = [c for c in complaints if c.status in OPEN_STATUSES]
@@ -46,7 +46,7 @@ def overview(db: Session, user: User, threshold: float | None, model_name: str |
             db.scalars(
                 select(ComplaintEvent).where(
                     ComplaintEvent.complaint_id.in_(ids),
-                    ComplaintEvent.action.in_(("escalation_triggered", "escalation_exhausted")),
+                    ComplaintEvent.action.in_(("escalation_triggered", "escalation_exhausted", "admin_reassigned")),
                 )
             )
         )
@@ -62,8 +62,12 @@ def overview(db: Session, user: User, threshold: float | None, model_name: str |
     category_changed = sum(1 for c in human if c.ai_prediction and c.category != c.ai_prediction.category)
     priority_changed = sum(1 for c in human if c.ai_prediction and c.priority != c.ai_prediction.priority)
 
-    start = (now - timedelta(days=13)).date()
-    per_day = Counter(c.created_at.date() for c in complaints if c.created_at.date() >= start)
+    # Days are counted in the display timezone (e.g. IST), not UTC, so a complaint filed
+    # at 02:00 IST is not counted on the previous day.
+    local = (lambda dt: dt.astimezone(tz)) if tz is not None else (lambda dt: dt)
+    start = (local(now) - timedelta(days=13)).date()
+    per_day = Counter(local(c.created_at).date() for c in complaints if local(c.created_at).date() >= start)
+    latest = max((c.created_at for c in complaints), default=None)
 
     return {
         "scope": scope,
@@ -124,7 +128,9 @@ def overview(db: Session, user: User, threshold: float | None, model_name: str |
             "automatic": sum(1 for e in escalation_events if e.action == "escalation_triggered" and e.actor_user_id is None),
             "manual": sum(1 for e in escalation_events if e.action == "escalation_triggered" and e.actor_user_id is not None),
             "exhausted": sum(1 for e in escalation_events if e.action == "escalation_exhausted"),
+            "admin_interventions": sum(1 for e in escalation_events if e.action == "admin_reassigned"),
         },
+        "latest_submission_at": latest.isoformat() if latest else None,
         "per_day": [
             {"date": (start + timedelta(days=i)).isoformat(), "count": per_day.get(start + timedelta(days=i), 0)}
             for i in range(14)
@@ -141,9 +147,12 @@ def overview(db: Session, user: User, threshold: float | None, model_name: str |
 
 NOTIFY_COMPLAINANT = {
     "sent_to_human_review", "assigned", "accepted", "overridden", "rerouted",
-    "escalation_triggered", "resolved",
+    "escalation_triggered", "resolved", "admin_reassigned",
 }
-NOTIFY_ASSIGNEE = {"sent_to_human_review", "assigned", "rerouted", "escalation_triggered", "tat_breached", "deadline_recalculated"}
+NOTIFY_ASSIGNEE = {
+    "sent_to_human_review", "assigned", "rerouted", "escalation_triggered", "tat_breached",
+    "deadline_recalculated", "admin_reassigned",
+}
 NOTIFY_ADMIN = {"escalation_triggered", "escalation_exhausted"}
 
 

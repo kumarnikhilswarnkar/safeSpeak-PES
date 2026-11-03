@@ -70,3 +70,9 @@ ml/.venv-ml/
 ml/artifacts/v3/encoders/
 ml/artifacts/v3/**/setfit_body/
 ml/.cache/
+
+# Uploaded profile photos (local development)
+backend/media/
+
+# Local start/stop script logs and PID file
+backend/logs/

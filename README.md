@@ -13,6 +13,20 @@ See [docs/architecture.md](docs/architecture.md) for the design, [docs/progress.
 for what is implemented, [docs/ml_evaluation.md](docs/ml_evaluation.md) for the model evaluation and
 [docs/FRIDAY_DEMO.md](docs/FRIDAY_DEMO.md) for the final demo.
 
+## Quick start (one command, Windows)
+
+After the one-time setup (backend virtual environment and `npm install`, see below), start the whole
+application from the repository root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\start-safespeak.ps1
+```
+
+or double-click `start-safespeak.cmd`. It checks the database schema (backing it up first if a
+migration is pending; it never resets data), starts the backend on port 8001, waits until it is
+healthy, starts the frontend and opens http://localhost:5173. **Ctrl+C** in that window stops both.
+For the containerised version (one URL behind nginx, PostgreSQL) see [docs/docker.md](docs/docker.md).
+
 ## Where SafeSpeak runs
 
 | Environment | How | Database |
@@ -102,6 +116,13 @@ Always start the API with the project's `.venv` Python: the system Python may ha
 scikit-learn that cannot run the model (the API then refuses to load it and submissions return 503).
 The final demo walkthrough is in [docs/FRIDAY_DEMO.md](docs/FRIDAY_DEMO.md).
 
+## SafeSpeak Assistant
+
+Every signed-in page has an **Ask SafeSpeak** button (and the `/assistant` page): ask for a complaint's status,
+deadline (TAT), current authority, escalation or timeline in plain language. Answers come only from the
+database and only for complaints you may open; no external AI service is used. See
+[docs/assistant.md](docs/assistant.md).
+
 ## AI triage model
 
 Two local scikit-learn models (category and priority) run inside the backend; no external AI service
@@ -128,8 +149,9 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173. The dev server forwards `/api` requests to the backend on port 8000
-(set `SAFESPEAK_API_URL` to use a different backend address).
+Open http://localhost:5173. The dev server forwards `/api` requests to the backend at
+`SAFESPEAK_API_URL`, read from the shell or from `frontend/.env.local` (git-ignored), e.g.
+`SAFESPEAK_API_URL=http://127.0.0.1:8000`; if it is not set, `http://127.0.0.1:8001` is used.
 
 ## Configuration and secrets
 

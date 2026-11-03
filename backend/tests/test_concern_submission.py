@@ -189,10 +189,37 @@ def test_submission_events_are_recorded_with_server_side_actor(client, db, world
     assert body["events"][0]["actor"]["id"] == world.users["student"].id
 
 
-def test_model_unavailable_refuses_submission(client, app, world):
+def _assert_fallback(response):
+    assert response.status_code == 201
+    body = response.json()
+    assert body["status"] == "PENDING_REVIEW"
+    assert body["decision_source"] == "AI_PENDING_REVIEW"
+    assert body["review_reasons"] == ["MODEL_UNAVAILABLE"]
+    assert body["ai"]["model"] == "model-unavailable:keyword-fallback"
+    assert body["ai"]["confidence"] == 0
+    assert body["ai"]["threshold_source"] == "MODEL_UNAVAILABLE"
+    assert body["ai"]["explanation"]["fallback"] is True
+    # Provisional labels come from the frozen keyword rules, only for routing to a reviewer.
+    assert body["category"] == body["ai"]["explanation"]["keyword_baseline"]["category"]
+    assert body["assigned_to"] is not None and body["tat"]["stage"] == "REVIEW"
+    return body
+
+
+def test_model_unavailable_accepts_complaint_for_human_review(client, app, world):
     app.state.triage_model = None
+    response = client.post(CONCERNS, json={"description": "The hostel mess food is cold every night."}, headers=world.h("student"))
+    body = _assert_fallback(response)
+    assert body["category"] == "Hostel"
+    assert "sent_to_human_review" in actions(body)
+
+
+def test_inference_failure_accepts_complaint_for_human_review(client, world):
+    def broken(_text):
+        raise RuntimeError("inference crashed")
+
+    world.model.predict = broken
     response = client.post(CONCERNS, json={"description": "Something is broken in the lab."}, headers=world.h("student"))
-    assert response.status_code == 503
+    _assert_fallback(response)
 
 
 def test_token_role_claim_cannot_unlock_submission(client, settings, world):

@@ -17,6 +17,13 @@ function useTick(ms = 1000) {
 }
 
 /** Live status of the automatic TAT monitor (polled every 10 s). */
+// Matches analytics_service._scope: whose complaints the overview numbers count.
+const SCOPE_TEXT = {
+  scope: 'the complaints in your read-only scope',
+  assigned: 'only the complaints currently assigned to you',
+  own: 'only your own complaints',
+}
+
 export default function AutomationPanel({ overview, canRun, onRan, className, showRuns = false }) {
   const { authRequest } = useAuth()
   const toast = useToast()
@@ -94,17 +101,31 @@ export default function AutomationPanel({ overview, canRun, onRan, className, sh
               <>
                 <div>
                   <dt className="text-xs text-slate-500">Overdue right now</dt>
-                  <dd className="font-medium tabular-nums">{overview.totals.overdue}</dd>
+                  <dd className="font-medium tabular-nums">
+                    {overview.totals.overdue}
+                    {overview.totals.needs_admin_attention > 0 && (
+                      <span className="ml-1 text-xs font-normal text-red-600">({overview.totals.needs_admin_attention} at end of chain)</span>
+                    )}
+                  </dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-slate-500">Escalated automatically (all time)</dt>
+                  <dt className="text-xs text-slate-500">Automatic escalation events (all time)</dt>
                   <dd className="font-medium tabular-nums">{overview.escalations.automatic}</dd>
                 </div>
               </>
             )}
           </dl>
+          {overview && (
+            <p className="mt-3 text-xs text-slate-500">
+              Overdue and escalation counts are read from the database and cover {SCOPE_TEXT[overview.scope] ?? 'complaints you can view'}. An escalated
+              complaint gets a new deadline, so it stops counting as overdue; complaints at the end of their chain stay overdue until handled.
+            </p>
+          )}
           {status.started_at && (
-            <p className="mt-3 text-xs text-slate-500">Monitor started {formatDateTime(status.started_at)}. Duplicate escalation is prevented by a lock and a new deadline after each escalation.</p>
+            <p className="mt-1.5 text-xs text-slate-500">
+              Monitor started {formatDateTime(status.started_at)}. Check counts and the recent-checks list are kept in memory and restart from zero
+              when the API restarts; escalation history is permanent in each complaint&apos;s audit trail. Duplicate escalation is prevented by a lock and a new deadline after each escalation.
+            </p>
           )}
           {canRun && (
             <button type="button" className="btn-secondary mt-4 w-full" onClick={runNow} disabled={busy}>

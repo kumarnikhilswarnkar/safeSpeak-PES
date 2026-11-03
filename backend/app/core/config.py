@@ -70,6 +70,11 @@ class Settings(BaseSettings):
     tat_monitor_enabled: bool = True
     tat_monitor_interval_seconds: int = Field(default=60, ge=5, le=3600)
 
+    # Uploaded files (profile photographs). Not served publicly: photos are returned
+    # only to their owner through an authenticated endpoint. In Docker this is a volume.
+    media_dir: Path = BACKEND_DIR / "media"
+    profile_photo_max_bytes: int = Field(default=2 * 1024 * 1024, ge=10 * 1024, le=10 * 1024 * 1024)
+
     # Enables demo-only endpoints such as simulating a TAT breach. Never in production.
     demo_mode: bool = False
 

@@ -14,6 +14,7 @@ from app.schemas.complaint import (
     ComplaintOut,
     EscalationOutcomeOut,
     EscalationRunOut,
+    AdminReassignRequest,
     PersonOut,
     ReviewRequest,
     complaint_detail_out,
@@ -25,11 +26,10 @@ from app.services.triage_service import TriageModel
 router = APIRouter(prefix="/concerns", tags=["concerns"])
 
 
-def get_triage_model(request: Request) -> TriageModel:
-    model = request.app.state.triage_model
-    if model is None:
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "The AI triage model is not available")
-    return model
+def get_triage_model(request: Request) -> TriageModel | None:
+    # None when the model could not be loaded: submissions are still accepted and
+    # sent to human review (complaint_service._triage), never refused.
+    return request.app.state.triage_model
 
 
 Submitter = Annotated[User, Depends(require_permission(Permission.SUBMIT_COMPLAINT))]
@@ -38,6 +38,7 @@ Handler = Annotated[User, Depends(require_permission(Permission.VIEW_ASSIGNED_CO
 Reviewer = Annotated[User, Depends(require_permission(Permission.REVIEW_COMPLAINTS))]
 ScopedViewer = Annotated[User, Depends(require_permission(Permission.VIEW_SCOPED_COMPLAINTS))]
 SystemOperator = Annotated[User, Depends(require_permission(Permission.MANAGE_RULES_AND_SETTINGS))]
+Intervener = Annotated[User, Depends(require_permission(Permission.INTERVENE_EXHAUSTED))]
 
 
 def _detail(db, c, settings) -> ComplaintDetailOut:
@@ -56,7 +57,7 @@ def submit_concern(
     user: Submitter,
     db: DbSession,
     settings: AppSettings,
-    model: Annotated[TriageModel, Depends(get_triage_model)],
+    model: Annotated[TriageModel | None, Depends(get_triage_model)],
 ) -> ComplaintDetailOut:
     c = complaint_service.submit(db, settings, model, user, payload.description)
     return _detail(db, c, settings)
@@ -130,6 +131,26 @@ def review_concern(
         priority=payload.priority,
         target_user_id=payload.target_user_id,
         remarks=payload.remarks,
+    )
+    return _detail(db, c, settings)
+
+
+@router.get("/{concern_id}/intervention-options")
+def intervention_options(concern_id: str, user: Intervener, db: DbSession) -> dict:
+    """For an exhausted complaint: eligible authorities and the new TAT the configured rules give."""
+    return complaint_service.intervention_options(db, user, concern_id)
+
+
+@router.post("/{concern_id}/admin-reassign", response_model=ComplaintDetailOut)
+def admin_reassign(
+    concern_id: str, payload: AdminReassignRequest, user: Intervener, db: DbSession, settings: AppSettings
+) -> ComplaintDetailOut:
+    """Administrator intervention: reassign an exhausted complaint with a mandatory reason."""
+    c = complaint_service.admin_reassign(
+        db, user, concern_id,
+        target_user_id=payload.target_user_id,
+        reason=payload.reason,
+        expected_assignee_id=payload.expected_assignee_id,
     )
     return _detail(db, c, settings)
 

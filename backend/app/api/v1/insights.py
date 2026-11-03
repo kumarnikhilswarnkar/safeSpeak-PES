@@ -69,7 +69,11 @@ def _research_payload(reports: dict[str, Any]) -> dict[str, Any]:
 @router.get("/analytics/overview")
 def analytics_overview(request: Request, user: CurrentUser, db: DbSession, settings: AppSettings) -> dict[str, Any]:
     threshold, _source, model = _model_info(request, settings)
-    return analytics_service.overview(db, user, threshold, model)
+    out = analytics_service.overview(db, user, threshold, model, settings.tz)
+    live = request.app.state.triage_model
+    # The category threshold above drives the histogram shading; priority has its own threshold.
+    out["priority_threshold"] = effective_priority_threshold(settings, live)[0] if live is not None else None
+    return out
 
 
 @router.get("/notifications")

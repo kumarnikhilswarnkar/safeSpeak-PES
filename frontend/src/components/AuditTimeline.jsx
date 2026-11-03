@@ -33,13 +33,14 @@ const EVENT_STYLE = {
   tat_breached: [AlarmClock, 'bg-red-50 text-red-600'],
   escalation_triggered: [ArrowUpCircle, 'bg-accent-50 text-accent-600'],
   escalation_exhausted: [ShieldAlert, 'bg-red-50 text-red-600'],
+  admin_reassigned: [UserCog, 'bg-violet-50 text-violet-700'],
 }
 
 function fmt(key, value) {
   if (value == null) return '—'
   if (key === 'assigned_user') return value.name
   if (key === 'deadline_at') return formatDateTime(value)
-  if (key === 'escalation_level') return `L${value}`
+  if (key === 'escalation_level') return `step ${value}`
   if (key === 'tat_hours') return `${value} h`
   if (key === 'reasons') return value.map((r) => REASON_LABEL[r] ?? r).join(', ')
   if (key === 'confidence' || key.endsWith('_confidence') || key === 'threshold') return `${Math.round(value * 100)}%`
@@ -51,7 +52,7 @@ const LABELS = {
   priority: 'Priority',
   status: 'Status',
   assigned_user: 'Assigned to',
-  escalation_level: 'Level',
+  escalation_level: 'Chain step',
   deadline_at: 'Deadline',
   tat_hours: 'TAT',
   reasons: 'Reasons',
@@ -98,7 +99,7 @@ function Changes({ event }) {
 
 export default function AuditTimeline({ events }) {
   return (
-    <ol className="relative space-y-5">
+    <ol className="stagger relative space-y-5">
       <span className="absolute top-2 bottom-2 left-4 w-px bg-slate-200" aria-hidden="true" />
       {events.map((e) => {
         const [Icon, tone] = EVENT_STYLE[e.action] ?? [CircleDot, 'bg-slate-100 text-slate-600']

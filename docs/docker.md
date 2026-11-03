@@ -54,6 +54,39 @@ all use the `DEMO_PASSWORD` value from `.env`.
 
 Stop: `docker compose down` (keeps data) · reset everything: `docker compose down -v`.
 
+## Installing Docker Desktop on Windows (not yet done on the development laptop)
+
+Docker has **not** been run on the development laptop; the Docker build and Compose smoke test
+are verified in GitHub Actions CI. To run the stack locally:
+
+1. Requirements: Windows 10/11 64-bit with virtualization enabled in the BIOS/UEFI, **WSL 2**,
+   and enough memory. Docker Desktop needs at least 4 GB RAM and runs PostgreSQL + backend +
+   frontend + nginx; the current laptop has 3.8 GB, which is below that, so **GitHub Codespaces
+   (below) is recommended** for this machine.
+2. Open PowerShell **as Administrator** and install WSL 2: `wsl --install`, then restart.
+3. Download Docker Desktop for Windows from the official site (docker.com → Products → Docker
+   Desktop), run the installer with "Use WSL 2 instead of Hyper-V" checked, restart if asked, and
+   start Docker Desktop once (accept the licence terms yourself).
+4. Verify in a new PowerShell window:
+   ```powershell
+   docker --version
+   docker compose version
+   docker run --rm hello-world
+   ```
+5. Start SafeSpeak from the repository root:
+   ```powershell
+   python scripts/generate_env.py
+   docker compose up --build -d
+   docker compose ps
+   docker compose run --rm seed
+   ```
+   then open http://localhost:8080. Check `curl.exe -s http://localhost:8080/api/v1/health`
+   (expects `"database":"ok"` and the v3 model). Data persists in the `pgdata` (database) and
+   `media` (profile photos) volumes; `docker compose down` keeps them.
+
+The Docker stack uses its own PostgreSQL database; it does not read or change the local SQLite
+development database (`backend/safespeak_dev.db`).
+
 ## GitHub Codespaces (recommended on low-memory machines)
 
 1. On GitHub open the repository, switch to the `final-architecture` branch.

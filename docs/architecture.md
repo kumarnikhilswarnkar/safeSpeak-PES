@@ -236,6 +236,60 @@ method and results: `docs/ml_evaluation.md`.
 - The model files are loaded only if their SHA-256 matches `metadata.json`.
 - `simulate_breach` exists only when `DEMO_MODE=true`, which is refused in production.
 
+## Phase 3: assistant, ML fallback and final UI
+
+- **SafeSpeak Assistant** (`docs/assistant.md`): `POST /api/v1/assistant/messages`, deterministic and
+  database-backed, same authorization as the complaint API (`get_visible` and the list functions); out-of-scope
+  IDs are indistinguishable from missing ones; messages are not stored; read-only.
+- **ML failure handling**: if the model is not loaded or inference raises, `complaint_service._triage` accepts the
+  complaint, labels it provisionally with the frozen keyword rules (model `model-unavailable:keyword-fallback`,
+  confidence 0, threshold source `MODEL_UNAVAILABLE`) and always sends it to human review
+  (`review_reasons = ["MODEL_UNAVAILABLE"]`). No schema change. The backend container healthcheck now requires
+  only the database, so a missing model cannot take the site offline; `/health` still reports `degraded`, and
+  the CI smoke test still requires the model.
+- **Frontend**: shared motion system (`styles/app.css`: entrance, stagger, skeleton shimmer, typing dots;
+  disabled for `prefers-reduced-motion`), animated headings and counters, page transitions, skeleton loading,
+  bottom-sheet dialogs on phones, slide-in menu, phone search, responsive complaint lists (cards below 1280 px,
+  table above), vertical workflow stepper on phones, 44 px touch targets, safe-area padding.
+- **One URL**: the nginx proxy remains the single entry point (`/` frontend, `/api/` backend); every service has
+  `restart: unless-stopped`; migrations run automatically.
+
+## Administrator intervention, assistant engine and metric definitions (2 November 2026)
+
+- **Administrator intervention** for exhausted escalation chains: `docs/admin_intervention.md`.
+- **Escalation step vs authority level**: `complaints.escalation_level` is the *step* in the configured
+  chain (1, 2, 3); authority levels (L1, L3, L4) belong to people and chain labels. The default sample
+  chain is step 1 = L1 department authority, step 2 = L3 Dean, step 3 = L4 Director (authority level 2 is
+  intentionally not in the sample chain). The UI now always says "step n"; it used to print "L{step}",
+  which looked like a mapping error ("L1 → L2" next to an L3 Dean). The backend mapping was correct.
+- **Review confirmation keeps a human-chosen assignee** (reroute or administrator intervention) unless the
+  reviewer changes the category (previously the chain re-routed it, undoing the manual choice).
+- **Dashboard metric definitions** (tested in `test_analytics_definitions.py`): *Escalated* = complaints
+  escalated at least once; *escalation events* = every escalation (the TAT monitor's "all time" figure);
+  *AI-flagged for review* = complaints the AI sent to human review at submission; *awaiting review now* =
+  current `PENDING_REVIEW`; *Overdue* = open and past deadline (including exhausted ones); submissions per
+  day are counted in IST.
+- **Complainant-facing AI card**: complainants see what the AI suggested in plain words, that it is only a
+  recommendation and whether a person reviews it; model names, confidences, thresholds and keyword evidence
+  are shown to staff and on the AI evaluation page.
+
+## Profile, branding and navigation (Phase 3 UI pass)
+
+- **Self-service profile** (`/api/v1/profile`, `app/services/profile_service.py`): the signed-in user may change
+  only their display name, phone number and photo. Email, department, role, authority level and status are
+  read-only (the request schema forbids them -> 422; there is no verification flow for email/department yet).
+  There is no user ID in any profile route, so no one can address another user's profile.
+- **Photos**: accepted only if the bytes are JPEG/PNG/WebP (magic-number check; client type and name are not
+  trusted), max `PROFILE_PHOTO_MAX_BYTES` (2 MB); stored on disk under `MEDIA_DIR/profile_photos` with a
+  server-generated name, never in the database; returned only to the owner (`GET /profile/photo`, private,
+  no-store). Phone and photo are never included in complaint, admin or `/auth/me` responses.
+- **Migration** `d4e8b1f27a90`: nullable `users.phone`, `users.photo_filename` (reversible; existing rows unchanged).
+- **Branding**: the official PES University logo (unaltered PNG with its own transparency) is shown only on light
+  surfaces (sign-in card, app header) because its navy lettering is illegible on navy; the campus photograph is the
+  sign-in background under a navy overlay. SafeSpeak PES remains the product identity.
+- **Navigation**: collapsible sidebar (icons + accessible tooltips when collapsed, choice remembered per browser);
+  Log out and then Profile at the bottom; phone drawer with focus management. The header no longer has a logout button.
+
 ## Phase 2: ML pipeline v3 (current model)
 
 - `ml/safespeak_ml/` + `ml/scripts/run_experiments.py`: candidates 0–9 per task, 5 × 5 grouped CV on 480

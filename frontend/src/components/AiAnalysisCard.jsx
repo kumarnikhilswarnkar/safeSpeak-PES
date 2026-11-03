@@ -1,6 +1,6 @@
-import { Bot, CheckCircle2, Info, ListTree, UserCog } from 'lucide-react'
+import { Bot, CheckCircle2, Info, ListTree, TriangleAlert, UserCog } from 'lucide-react'
 
-import { REASON_LABEL, percent } from '../utils/format.js'
+import { REASON_LABEL, REASON_PLAIN, percent } from '../utils/format.js'
 import { ConfidenceBar } from './Badges.jsx'
 import { Badge, Card, cx } from './ui.jsx'
 
@@ -67,8 +67,83 @@ function Prediction({ label, value, confidence, threshold }) {
   )
 }
 
+/** Shown when the model was unavailable at submission: nothing was predicted, a person decides. */
+function FallbackCard({ ai, note }) {
+  return (
+    <Card title="AI analysis" subtitle="The AI model was unavailable when this complaint was submitted" icon={Bot} actions={<Badge tone="amber">No AI prediction</Badge>}>
+      <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <TriangleAlert className="mt-0.5 size-5 shrink-0 text-amber-600" aria-hidden="true" />
+        <div className="min-w-0">
+          <p className="font-semibold">Accepted and sent to human review</p>
+          <p className="mt-0.5">{note}</p>
+          <p className="mt-2 text-xs text-amber-800/80">
+            Provisional routing labels (frozen keyword rules): {ai.category} / {ai.priority}. The reviewer sets the final category and priority.
+          </p>
+        </div>
+      </div>
+    </Card>
+  )
+}
+
 /** AI recommendation, confidence vs threshold, the resulting decision and the model's evidence. */
-export default function AiAnalysisCard({ ai, decisionSource, compact = false }) {
+/**
+ * Complainant view: what the AI suggested, in plain words, that it is only a recommendation,
+ * and whether a person reviews it. Model names, confidence scores, thresholds and keyword
+ * evidence are kept for staff and the AI evaluation page.
+ */
+function PlainAiCard({ ai, decisionSource, status }) {
+  const review = ai.flagged_for_review
+  const decided = decisionSource === 'HUMAN_ACCEPTED' || decisionSource === 'HUMAN_OVERRIDDEN'
+  const fallback = ai.explanation?.fallback
+  return (
+    <Card title="How your complaint was sorted" icon={Bot} actions={<Badge tone="slate">AI suggestion, not a decision</Badge>}>
+      <p className="text-sm text-slate-700">
+        {fallback ? (
+          'The automatic sorting was unavailable when you submitted, so a person decides the category and priority.'
+        ) : (
+          <>
+            SafeSpeak&apos;s AI read your complaint and suggested the category <strong>{ai.category}</strong> and{' '}
+            <strong>{ai.priority}</strong> priority. This only helps route it quickly; it is not a final decision.
+          </>
+        )}
+      </p>
+      <div
+        className={cx(
+          'mt-4 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm',
+          review ? 'border-violet-200 bg-violet-50 text-violet-900' : 'border-emerald-200 bg-emerald-50 text-emerald-900',
+        )}
+      >
+        {review ? <UserCog className="mt-0.5 size-5 shrink-0 text-violet-600" aria-hidden="true" /> : <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" aria-hidden="true" />}
+        <div className="min-w-0">
+          {review ? (
+            <>
+              <p className="font-semibold">A person reviews this complaint</p>
+              <p className="mt-0.5">
+                Because {ai.flag_reasons.map((r) => REASON_PLAIN[r] ?? r).join('; ')}, an authorised reviewer checks the suggestion
+                {decided ? ' — and has already decided (see the comparison below).' : status === 'PENDING_REVIEW' ? ' before anything is final.' : '.'}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-semibold">Sent to the responsible authority</p>
+              <p className="mt-0.5">
+                The suggestion was clear and the complaint is not High/Critical, so it went straight to the authority. They can still change
+                the category or priority.
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+      <p className="mt-3 flex items-start gap-1.5 text-xs text-slate-500">
+        <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+        The AI runs on SafeSpeak&apos;s own server; no external AI service sees your complaint. Every final decision is made by a person.
+      </p>
+    </Card>
+  )
+}
+
+export default function AiAnalysisCard({ ai, decisionSource, compact = false, technical = true, status }) {
+  if (!technical) return <PlainAiCard ai={ai} decisionSource={decisionSource} status={status} />
   const review = ai.flagged_for_review
   const e = ai.explanation
   const kw = e?.keyword_baseline
@@ -76,6 +151,7 @@ export default function AiAnalysisCard({ ai, decisionSource, compact = false }) 
   const priorityThreshold = ai.priority_threshold ?? ai.threshold
   const separate = priorityThreshold !== ai.threshold
   const linear = e?.category_model?.kind !== 'embedding-lr'
+  if (e?.fallback) return <FallbackCard ai={ai} note={e.note} />
   return (
     <Card
       title="AI analysis"

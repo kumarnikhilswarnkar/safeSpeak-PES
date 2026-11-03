@@ -48,6 +48,17 @@ class ReviewRequest(BaseModel):
     remarks: str | None = Field(default=None, max_length=2000)
 
 
+class AdminReassignRequest(BaseModel):
+    """Administrator intervention on an exhausted complaint. The administrator comes
+    from the token; expected_assignee_id guards against acting on a stale view."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    target_user_id: int
+    reason: str = Field(min_length=1, max_length=2000)
+    expected_assignee_id: int | None
+
+
 # --- responses ------------------------------------------------------------------
 
 class PersonOut(BaseModel):
@@ -125,7 +136,7 @@ class EventOut(BaseModel):
 
 class EscalationStepOut(BaseModel):
     at: datetime
-    result: Literal["escalated", "exhausted"]
+    result: Literal["escalated", "exhausted", "admin_reassigned"]
     automatic: bool
     from_level: int | None
     to_level: int | None
@@ -133,6 +144,9 @@ class EscalationStepOut(BaseModel):
     to_assignee: dict[str, Any] | None
     previous_deadline_at: str | None
     new_deadline_at: str | None
+    # Administrator intervention only: who decided and why.
+    reason: str | None = None
+    by: dict[str, Any] | None = None
 
 
 class EscalationSummaryOut(BaseModel):
@@ -243,9 +257,21 @@ def _escalation_summary(c: Complaint, now: datetime) -> EscalationSummaryOut:
     original = next((e.new_value["deadline_at"] for e in c.events if e.new_value and e.new_value.get("deadline_at")), None)
     history = []
     for e in c.events:
-        if e.action not in ("escalation_triggered", "escalation_exhausted"):
+        if e.action not in ("escalation_triggered", "escalation_exhausted", "admin_reassigned"):
             continue
         prev, new = e.previous_value or {}, e.new_value or {}
+        if e.action == "admin_reassigned":
+            history.append(
+                EscalationStepOut(
+                    at=e.created_at, result="admin_reassigned", automatic=False,
+                    from_level=prev.get("escalation_level"), to_level=new.get("escalation_level"),
+                    from_assignee=prev.get("assigned_user"), to_assignee=new.get("assigned_user"),
+                    previous_deadline_at=prev.get("deadline_at"), new_deadline_at=new.get("deadline_at"),
+                    reason=e.remarks,
+                    by={"name": e.actor.name, "role": e.actor_role} if e.actor else None,
+                )
+            )
+            continue
         exhausted = e.action == "escalation_exhausted"
         history.append(
             EscalationStepOut(

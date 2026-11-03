@@ -64,6 +64,15 @@ export const REASON_LABEL = {
   LOW_CATEGORY_CONFIDENCE: 'Category confidence below threshold',
   LOW_PRIORITY_CONFIDENCE: 'Priority confidence below threshold',
   HIGH_SEVERITY: 'High/Critical priority always needs a human',
+  MODEL_UNAVAILABLE: 'AI model unavailable: a person decides category and priority',
+}
+
+// Plain-language reasons for complainants (no thresholds or model terms).
+export const REASON_PLAIN = {
+  LOW_CATEGORY_CONFIDENCE: 'the AI was not sure which category fits',
+  LOW_PRIORITY_CONFIDENCE: 'the AI was not sure how urgent it is',
+  HIGH_SEVERITY: 'High and Critical complaints are always checked by a person',
+  MODEL_UNAVAILABLE: 'the AI was unavailable, so a person decides',
 }
 
 export const EVENT_LABEL = {
@@ -81,6 +90,7 @@ export const EVENT_LABEL = {
   tat_breached: 'TAT breached',
   escalation_triggered: 'Escalated',
   escalation_exhausted: 'Escalation chain exhausted',
+  admin_reassigned: 'Reassigned by administrator',
 }
 
 export const SCOPE_LABEL = {
@@ -110,6 +120,6 @@ export function stageLabel(c) {
   if (c.status === 'RESOLVED' || c.status === 'CLOSED') return 'Resolved'
   if (c.breached_at_top) return 'Needs admin attention'
   if (c.status === 'PENDING_REVIEW') return 'Awaiting human review'
-  if (c.escalated) return `Escalated · L${c.escalation_level}`
-  return `With L${c.escalation_level} authority`
+  if (c.escalated) return `Escalated · step ${c.escalation_level}`
+  return `With step ${c.escalation_level} authority`
 }

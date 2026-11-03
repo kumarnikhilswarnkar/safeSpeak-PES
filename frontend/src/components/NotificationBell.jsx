@@ -20,6 +20,7 @@ const TEXT = {
   tat_breached: [ShieldAlert, 'missed its deadline'],
   deadline_recalculated: [Bot, 'deadline recalculated'],
   resolved: [CheckCircle2, 'was resolved'],
+  admin_reassigned: [UserPlus, 'was reassigned by an administrator'],
 }
 
 // Read state is a per-browser convenience only; the list itself comes from the server.
@@ -89,7 +90,7 @@ export default function NotificationBell() {
         )}
       </button>
       {open && (
-        <div className="card absolute right-0 z-40 mt-2 w-[22rem] overflow-hidden shadow-(--shadow-pop)">
+        <div className="card fixed inset-x-3 top-[4.5rem] z-40 animate-pop overflow-hidden shadow-(--shadow-pop) sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-2 sm:w-[22rem]">
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <p className="text-sm font-semibold text-slate-900">Notifications</p>
             <p className="text-xs text-slate-500">In-app only · last 30 days</p>
@@ -97,7 +98,7 @@ export default function NotificationBell() {
           {items.length === 0 ? (
             <p className="px-4 py-8 text-center text-sm text-slate-500">Nothing new.</p>
           ) : (
-            <ul className="max-h-96 divide-y divide-slate-100 overflow-y-auto">
+            <ul className="max-h-[min(24rem,calc(100dvh-9rem))] divide-y divide-slate-100 overflow-y-auto">
               {items.map((n) => {
                 const [Icon, text] = TEXT[n.action] ?? [Bell, n.action]
                 return (

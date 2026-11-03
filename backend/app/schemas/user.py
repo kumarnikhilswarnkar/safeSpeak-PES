@@ -26,3 +26,13 @@ class UserOut(BaseModel):
 class CurrentUserOut(UserOut):
     # Copy of the server-side role permissions, for the UI only.
     permissions: list[str]
+    has_photo: bool = False
+
+
+class ProfileOut(UserOut):
+    """The signed-in user's own profile. Phone and photo are personal data: they are
+    returned only here (to their owner), never in UserOut, complaint or admin views."""
+
+    phone: str | None
+    has_photo: bool
+    editable_fields: list[str]

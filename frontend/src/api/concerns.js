@@ -21,3 +21,10 @@ export const simulateBreach = (authRequest, code) =>
   authRequest(`/concerns/${encodeURIComponent(code)}/simulate_breach`, { method: 'POST' })
 
 export const escalateOverdue = (authRequest) => authRequest('/concerns/escalate-overdue', { method: 'POST' })
+
+// Administrator intervention for complaints whose escalation chain is exhausted.
+export const getInterventionOptions = (authRequest, code) =>
+  authRequest(`/concerns/${encodeURIComponent(code)}/intervention-options`)
+
+export const adminReassign = (authRequest, code, body) =>
+  authRequest(`/concerns/${encodeURIComponent(code)}/admin-reassign`, { method: 'POST', body })

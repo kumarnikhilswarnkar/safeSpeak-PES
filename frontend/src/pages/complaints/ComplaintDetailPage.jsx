@@ -23,6 +23,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { getConcern, getRerouteTargets, reviewConcern, simulateBreach } from '../../api/concerns.js'
 import { getAutomation, runAutomationNow } from '../../api/insights.js'
 import { useAuth } from '../../auth/AuthContext.jsx'
+import AdminInterventionPanel from '../../components/AdminInterventionPanel.jsx'
 import AiAnalysisCard from '../../components/AiAnalysisCard.jsx'
 import AppShell from '../../components/AppShell.jsx'
 import AuditTimeline from '../../components/AuditTimeline.jsx'
@@ -93,10 +94,13 @@ export default function ComplaintDetailPage() {
   const isOpen = OPEN_STATUSES.includes(c.status)
   const canAct = isOpen && user.permissions.includes('review_complaints') && c.assigned_to?.id === user.id
   const isOperator = user.permissions.includes('manage_rules_and_settings')
+  const canIntervene = isOpen && c.breached_at_top && user.permissions.includes('intervene_exhausted_complaints')
+  // Model names, confidences, thresholds and keyword evidence are for staff; complainants get plain language.
+  const technicalAi = user.permissions.includes('review_complaints') || user.permissions.includes('view_scoped_complaints')
 
   return (
     <AppShell>
-      <button type="button" onClick={() => navigate(-1)} className="mb-4 inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800">
+      <button type="button" onClick={() => navigate(-1)} className="-ml-2 mb-3 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-800 sm:min-h-9">
         <ArrowLeft className="size-4" /> Back
       </button>
 
@@ -126,14 +130,22 @@ export default function ComplaintDetailPage() {
 
       <WorkflowStepper complaint={c} />
 
-      {c.breached_at_top && (
+      {c.breached_at_top && isOpen && (
         <Alert tone="red" icon={ShieldAlert} title="Escalation chain exhausted — administrator attention needed" className="mt-4">
-          The deadline passed at the highest configured level. The complaint stays with the highest authority and is
-          flagged on the administrator dashboard; no further automatic escalation is possible.
+          The deadline passed at the highest configured level, so no further automatic escalation is possible.{' '}
+          {canIntervene
+            ? 'Use the Administrator intervention section below to reassign it with a reason and a new deadline.'
+            : 'It is flagged for an administrator, who can reassign it to another authority with a new deadline.'}
         </Alert>
       )}
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-3">
+      {canIntervene && (
+        <div className="mt-6">
+          <AdminInterventionPanel complaint={c} onUpdated={setData} />
+        </div>
+      )}
+
+      <div className="stagger mt-6 grid gap-6 xl:grid-cols-3">
         <div className="min-w-0 space-y-6 xl:col-span-2">
           <Card title="Complaint" icon={FileText}>
             <p className="text-[15px] leading-relaxed whitespace-pre-wrap text-slate-800">{c.description}</p>
@@ -145,7 +157,7 @@ export default function ComplaintDetailPage() {
             )}
           </Card>
 
-          <AiAnalysisCard ai={c.ai} decisionSource={c.decision_source} />
+          <AiAnalysisCard ai={c.ai} decisionSource={c.decision_source} technical={technicalAi} status={c.status} />
 
           <DecisionComparison complaint={c} />
 
@@ -178,7 +190,7 @@ function DecisionComparison({ complaint: c }) {
   ]
   return (
     <Card title="AI recommendation vs final decision" icon={UserCheck} subtitle="The AI output is never edited; the final values are what the workflow uses">
-      <div className="overflow-hidden rounded-lg border border-slate-200">
+      <div className="overflow-x-auto rounded-lg border border-slate-200 [&_td]:px-3 [&_th]:px-3 sm:[&_td]:px-4 sm:[&_th]:px-4">
         <table className="min-w-full divide-y divide-slate-200 text-sm">
           <thead className="bg-slate-50">
             <tr>
@@ -198,7 +210,11 @@ function DecisionComparison({ complaint: c }) {
                 <td className="table-cell">{ai}</td>
                 <td className="table-cell">
                   <span className={cx('font-medium', ai !== final ? 'text-amber-700' : 'text-slate-900')}>{final}</span>
-                  {ai !== final && <Badge tone="amber" className="ml-2">changed by human</Badge>}
+                  {ai !== final && (
+                    <Badge tone="amber" className="mt-1 sm:mt-0 sm:ml-2">
+                      changed by human
+                    </Badge>
+                  )}
                 </td>
               </tr>
             ))}
@@ -245,7 +261,10 @@ function AssignmentCard({ complaint: c }) {
           <span className="block text-xs text-slate-500">{ROLE_SHORT[c.assigned_to?.role]}</span>
         </KeyValue>
         <KeyValue label="Department / office">{c.handling_department?.name ?? '—'}</KeyValue>
-        <KeyValue label="Current level">L{c.escalation_level} of the chain</KeyValue>
+        <KeyValue label="Escalation step">
+          Step {c.escalation_level} of {c.routing?.chain?.length ?? '?'}
+          {c.assigned_to?.authority_level ? <span className="block text-xs text-slate-500">Assigned authority level: L{c.assigned_to.authority_level}</span> : null}
+        </KeyValue>
       </dl>
       {last && (
         <div className="mt-4 rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
@@ -272,7 +291,7 @@ function AssignmentCard({ complaint: c }) {
                   current ? 'bg-brand-50 font-medium text-brand-800 ring-1 ring-brand-100' : passed ? 'text-slate-400 line-through' : 'text-slate-600',
                 )}
               >
-                <span className={cx('grid size-5 shrink-0 place-items-center rounded-full text-[10px] font-semibold', current ? 'bg-brand-600 text-white' : 'bg-slate-200 text-slate-600')}>
+                <span className={cx('grid size-5 shrink-0 place-items-center rounded-full text-[11px] font-semibold', current ? 'bg-brand-600 text-white' : 'bg-slate-200 text-slate-600')}>
                   {step.level}
                 </span>
                 {step.label}
@@ -337,18 +356,29 @@ function EscalationCard({ complaint: c }) {
                 <span className="font-medium text-slate-900">
                   {h.result === 'exhausted' ? (
                     'Chain exhausted'
+                  ) : h.result === 'admin_reassigned' ? (
+                    'Administrator intervention'
                   ) : (
                     <>
-                      L{h.from_level} <ArrowRight className="inline size-3.5" /> L{h.to_level}
+                      Step {h.from_level} <ArrowRight className="inline size-3.5" /> Step {h.to_level}
                     </>
                   )}
                 </span>
-                <Badge tone={h.automatic ? 'brand' : 'slate'} icon={h.automatic ? Bot : Users}>
-                  {h.automatic ? 'Automatic' : 'Manual'}
-                </Badge>
+                {h.result === 'admin_reassigned' ? (
+                  <Badge tone="violet" icon={UserCheck}>
+                    {h.by?.name ?? 'Administrator'}
+                  </Badge>
+                ) : (
+                  <Badge tone={h.automatic ? 'brand' : 'slate'} icon={h.automatic ? Bot : Users}>
+                    {h.automatic ? 'Automatic' : 'Manual'}
+                  </Badge>
+                )}
               </div>
               <p className="mt-1 text-xs text-slate-500">{formatDateTime(h.at)}</p>
-              {h.result === 'escalated' && (
+              {h.result === 'admin_reassigned' && h.reason && (
+                <p className="mt-2 rounded-md bg-violet-50 px-2.5 py-1.5 text-xs text-violet-900">Reason: “{h.reason}”</p>
+              )}
+              {(h.result === 'escalated' || h.result === 'admin_reassigned') && (
                 <dl className="mt-2 space-y-1 text-xs">
                   <div className="flex justify-between gap-2">
                     <dt className="text-slate-500">From</dt>
@@ -359,7 +389,7 @@ function EscalationCard({ complaint: c }) {
                     <dd className="text-right font-medium">{h.to_assignee?.name ?? '—'}</dd>
                   </div>
                   <div className="flex justify-between gap-2">
-                    <dt className="text-slate-500">Missed deadline</dt>
+                    <dt className="text-slate-500">{h.result === 'admin_reassigned' ? 'Previous deadline' : 'Missed deadline'}</dt>
                     <dd className="text-right">{formatDateTime(h.previous_deadline_at)}</dd>
                   </div>
                   <div className="flex justify-between gap-2">

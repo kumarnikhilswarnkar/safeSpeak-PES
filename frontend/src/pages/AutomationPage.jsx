@@ -80,7 +80,7 @@ function Chains({ rules }) {
               <span key={s.id} className="flex items-center gap-2">
                 {i > 0 && <ArrowRight className="size-4 text-slate-300" />}
                 <span className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs">
-                  <span className="font-semibold text-brand-700">Level {s.level}</span> · {s.label}
+                  <span className="font-semibold text-brand-700">Step {s.level}</span> · {s.label}
                   <span className="block text-slate-500">
                     {SCOPE_LABEL[s.target_scope]}
                     {s.target_department ? ` (${s.target_department})` : ''}
@@ -104,7 +104,7 @@ function TatRules({ rules }) {
             <th className="table-head">Stage</th>
             <th className="table-head">Category</th>
             <th className="table-head">Priority</th>
-            <th className="table-head">Level</th>
+            <th className="table-head">Chain step</th>
             <th className="table-head text-right">Hours</th>
           </tr>
         </thead>
@@ -116,7 +116,7 @@ function TatRules({ rules }) {
               </td>
               <td className="table-cell text-slate-600">{r.category ?? 'any'}</td>
               <td className="table-cell text-slate-600">{r.priority ?? 'any'}</td>
-              <td className="table-cell text-slate-600">{r.escalation_level ? `L${r.escalation_level}` : 'any'}</td>
+              <td className="table-cell text-slate-600">{r.escalation_level ? `Step ${r.escalation_level}` : 'any'}</td>
               <td className="table-cell text-right font-medium tabular-nums">{r.tat_hours}</td>
             </tr>
           ))}

@@ -82,7 +82,9 @@ def test_docker_image_ships_the_configured_model_version():
     assert "COPY ml/artifacts/${MODEL_VERSION}" in dockerfile
     # Each ENV entry on its own continuation line (the backend reads MODEL_DIR and REPORTS_DIR).
     assert re.search(r"^\s+MODEL_DIR=/app/ml/artifacts/\$\{MODEL_VERSION\} \\$", dockerfile, re.M)
-    assert re.search(r"^\s+REPORTS_DIR=/app/ml/reports/\$\{MODEL_VERSION\}$", dockerfile, re.M)
+    assert re.search(r"^\s+REPORTS_DIR=/app/ml/reports/\$\{MODEL_VERSION\}( \\)?$", dockerfile, re.M)
+    assert re.search(r"^\s+MEDIA_DIR=/app/media$", dockerfile, re.M)
+    assert r"\n" not in dockerfile  # no literal backslash-n inside an instruction
     compose = (REPO_DIR / "docker-compose.yml").read_text(encoding="utf-8")
     assert f"${{MODEL_VERSION:-{config.ARTIFACT_VERSION}}}" in compose
     # The deployed artifact must not be excluded from the build context.

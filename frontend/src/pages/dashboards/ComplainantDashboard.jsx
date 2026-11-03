@@ -34,7 +34,7 @@ export default function ComplainantDashboard() {
         <ErrorState error={error} onRetry={reload} />
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+          <div className="stagger grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
             <StatCard label="Total complaints" value={data.length} icon={ClipboardList} tone="brand" />
             <StatCard label="Pending" value={data.filter((c) => OPEN_STATUSES.includes(c.status)).length} icon={Hourglass} tone="amber" hint="Open, not yet resolved" />
             <StatCard label="Under human review" value={data.filter((c) => c.status === 'PENDING_REVIEW').length} icon={UserCog} tone="violet" />
@@ -42,14 +42,14 @@ export default function ComplainantDashboard() {
             <StatCard label="Escalated" value={data.filter((c) => c.escalated).length} icon={ArrowUpCircle} tone="accent" hint="Deadline missed → next level" />
           </div>
 
-          <div className="mt-6 grid gap-6 xl:grid-cols-3">
+          <div className="stagger mt-6 grid gap-6 xl:grid-cols-3">
             <Card
               title="Recent complaints"
               icon={ClipboardList}
               className="xl:col-span-2"
               bodyClassName="p-0"
               actions={
-                <Link to="/concerns/mine" className="text-sm font-medium text-brand-600 hover:text-brand-800">
+                <Link to="/concerns/mine" className="-my-2 inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-medium text-brand-600 hover:bg-brand-50 hover:text-brand-800 sm:min-h-9">
                   View all
                 </Link>
               }
